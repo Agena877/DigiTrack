@@ -68,7 +68,8 @@ TEMPLATES = [
 # ✅ Uses DATABASE_URL from Render environment variable
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite3')
+        default=config('DATABASE_URL', default='postgresql://digitrack_user:12345@localhost:5432/digitrack_db'),
+        conn_max_age=600
     )
 }
 
