@@ -117,17 +117,31 @@ pytest
 
 ## Deployment to Render
 
-1. Push your code to GitHub
-2. Create a new Web Service on Render
-3. Connect your GitHub repository
-4. Set the following:
-   - **Build Command**: `pip install -r requirements.txt`
+**📖 See detailed setup guide: [RENDER_SETUP.md](RENDER_SETUP.md)**
+
+### Quick Deploy Steps:
+
+1. **Create PostgreSQL Database on Render**
+   - New + → PostgreSQL
+   - Copy the Internal Database URL
+
+2. **Create Web Service on Render**
+   - Connect your GitHub repository
+   - **Build Command**: `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate`
    - **Start Command**: `gunicorn config.wsgi:application`
-5. Add environment variables:
-   - `SECRET_KEY`: Your Django secret key
-   - `DEBUG`: False
-   - `DATABASE_URL`: (Automatically provided by Render PostgreSQL)
-6. Deploy!
+
+3. **Set Environment Variables**:
+   ```env
+   SECRET_KEY=<generate-strong-key>
+   DEBUG=False
+   DATABASE_URL=<internal-database-url-from-render>
+   ```
+
+4. **Deploy and Create Superuser**
+   - Deploy from Render Dashboard
+   - Use Shell to run: `python manage.py createsuperuser`
+
+For complete instructions, see [RENDER_SETUP.md](RENDER_SETUP.md)
 
 ## Environment Variables
 
