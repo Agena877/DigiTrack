@@ -102,7 +102,7 @@ Copy the output and use it as SECRET_KEY on Render.
 - [ ] **Step 2**: Create Web Service
   - Go to Dashboard → New + → Web Service
   - Connect GitHub repo
-  - Set Build Command: `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate`
+  - Set Build Command: `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate && python manage.py create_admin`
   - Set Start Command: `gunicorn config.wsgi:application`
 
 - [ ] **Step 3**: Add Environment Variables
@@ -110,18 +110,19 @@ Copy the output and use it as SECRET_KEY on Render.
   - Add `SECRET_KEY` (generate new one)
   - Add `DEBUG=False`
   - Add `DATABASE_URL` (paste Internal URL from Step 1)
+  - Add `DJANGO_SUPERUSER_USERNAME=admin`
+  - Add `DJANGO_SUPERUSER_EMAIL=admin@example.com`
+  - Add `DJANGO_SUPERUSER_PASSWORD=<your-password>`
 
 - [ ] **Step 4**: Deploy
   - Click "Manual Deploy" → "Deploy latest commit"
   - Wait for build to complete
+  - Look for "Superuser created successfully!" in logs
 
-- [ ] **Step 5**: Create Admin User
-  - Go to Web Service → Shell
-  - Run: `python manage.py createsuperuser`
-
-- [ ] **Step 6**: Access Your App
+- [ ] **Step 5**: Access Your App
   - Visit: `https://your-app.onrender.com`
   - Admin: `https://your-app.onrender.com/admin`
+  - Login with username/password from env vars
 
 ---
 

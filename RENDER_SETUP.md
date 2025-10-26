@@ -130,10 +130,34 @@ python manage.py migrate
 
 ## Create Superuser on Render
 
+### Method 1: Using Django Management Command Script (Recommended for Free Tier)
+
+Since the Shell tab isn't available on free tier, create a superuser automatically during deployment:
+
+1. **Create a management command** (already done in your project):
+   Create file: `apps/tourism/management/commands/create_admin.py`
+
+2. **Add to Build Command**:
+   Update your Render build command to:
+   ```bash
+   pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate && python manage.py create_admin
+   ```
+
+3. **Set Environment Variables** for admin credentials:
+   ```env
+   DJANGO_SUPERUSER_USERNAME=admin
+   DJANGO_SUPERUSER_EMAIL=admin@example.com
+   DJANGO_SUPERUSER_PASSWORD=YourStrongPassword123!
+   ```
+
+4. The superuser will be created automatically on first deployment!
+
+### Method 2: Via Shell Tab (Paid Plans Only)
+
 After first deployment, create an admin user:
 
 1. Go to Render Dashboard → Your Web Service
-2. Click **"Shell"** tab
+2. Click **"Shell"** tab (requires paid plan)
 3. Run:
 ```bash
 python manage.py createsuperuser
@@ -144,6 +168,8 @@ Or use this one-liner:
 ```bash
 python manage.py shell -c "from apps.tourism.models import CustomUser; CustomUser.objects.create_superuser('admin', 'admin@example.com', 'your-strong-password')"
 ```
+
+### Method 3: Create Locally Then Migrate Database (Alternative)
 
 ---
 
