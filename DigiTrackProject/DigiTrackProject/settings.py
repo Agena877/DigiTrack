@@ -20,6 +20,11 @@ RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
+# --- CSRF Trusted Origins ---
+CSRF_TRUSTED_ORIGINS = []
+if RENDER_EXTERNAL_HOSTNAME:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
+
 # --- Applications ---
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -28,7 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'tourism',  # ✅ corrected app reference
+    'DigiTrackProject.tourism',
 ]
 
 # --- Middleware ---
@@ -44,8 +49,8 @@ MIDDLEWARE = [
 ]
 
 # --- URL & WSGI ---
-ROOT_URLCONF = 'DigiTrackProject.urls'  # ✅ corrected path
-WSGI_APPLICATION = 'DigiTrackProject.wsgi.application'  # ✅ corrected path
+ROOT_URLCONF = 'DigiTrackProject.DigiTrackProject.urls'
+WSGI_APPLICATION = 'DigiTrackProject.DigiTrackProject.wsgi.application'
 
 # --- Templates ---
 TEMPLATES = [
