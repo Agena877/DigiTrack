@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-vf!mpw5)q$6f(n*xex0jt!ic7n-=vt%e@na63ab)%g)!vy0091')
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-# For Render deployment
+# --- Allowed Hosts (Render + local) ---
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
@@ -28,7 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'DigiTrackProject.tourism',
+    'tourism',  # ✅ corrected app reference
 ]
 
 # --- Middleware ---
@@ -44,8 +44,8 @@ MIDDLEWARE = [
 ]
 
 # --- URL & WSGI ---
-ROOT_URLCONF = 'DigiTrackProject.DigiTrackProject.urls'
-WSGI_APPLICATION = 'DigiTrackProject.DigiTrackProject.wsgi.application'
+ROOT_URLCONF = 'DigiTrackProject.urls'  # ✅ corrected path
+WSGI_APPLICATION = 'DigiTrackProject.wsgi.application'  # ✅ corrected path
 
 # --- Templates ---
 TEMPLATES = [
@@ -65,10 +65,13 @@ TEMPLATES = [
 ]
 
 # --- Database ---
-# ✅ Uses DATABASE_URL from Render environment variable
+# Uses DATABASE_URL from Render environment variable or defaults to local Postgres
 DATABASES = {
     'default': dj_database_url.config(
-        default=config('DATABASE_URL', default='postgresql://digitrack_user:12345@localhost:5432/digitrack_db'),
+        default=config(
+            'DATABASE_URL',
+            default='postgresql://digitrack_user:12345@localhost:5432/digitrack_db'
+        ),
         conn_max_age=600
     )
 }
@@ -98,15 +101,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- Custom user model ---
 AUTH_USER_MODEL = 'tourism.CustomUser'
-
-# --- Optional: auto migrate when running locally ---
-import sys
-from django.core.management import execute_from_command_line
-if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "DigiTrackProject.DigiTrackProject.settings")
-    try:
-        from django import setup
-        setup()
-    except ImportError:
-        pass
-    execute_from_command_line(sys.argv)
