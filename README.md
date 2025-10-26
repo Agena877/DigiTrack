@@ -19,24 +19,29 @@ DigiTrack/
 ├── manage.py                    # Django management script
 ├── Procfile                     # Render deployment configuration
 ├── requirements.txt             # Python dependencies
+├── requirements-test.txt        # Test dependencies
+├── pytest.ini                   # Pytest configuration
+├── create_sample_bookings.py    # Sample data generator
 ├── .gitignore                   # Git ignore rules
 ├── .env.example                 # Environment variables template
-└── DigiTrackProject/           # Main project directory
-    ├── DigiTrackProject/       # Django project settings
-    │   ├── settings.py         # Main settings file
-    │   ├── urls.py             # URL configuration
-    │   ├── wsgi.py             # WSGI configuration
-    │   └── asgi.py             # ASGI configuration
-    └── tourism/                # Tourism application
-        ├── models.py           # Database models
-        ├── views.py            # View functions
-        ├── urls.py             # App URL patterns
-        ├── admin.py            # Admin configuration
-        ├── forms.py            # Form definitions
-        ├── templates/          # HTML templates
-        ├── static/             # Static files (CSS, JS, images)
-        ├── migrations/         # Database migrations
-        └── tests/              # Test files
+├── config/                      # Django project settings
+│   ├── __init__.py
+│   ├── settings.py              # Main settings file
+│   ├── urls.py                  # URL configuration
+│   ├── wsgi.py                  # WSGI configuration
+│   └── asgi.py                  # ASGI configuration
+├── apps/                        # Django applications
+│   └── tourism/                 # Tourism application
+│       ├── models.py            # Database models
+│       ├── views.py             # View functions
+│       ├── urls.py              # App URL patterns
+│       ├── admin.py             # Admin configuration
+│       ├── forms.py             # Form definitions
+│       ├── templates/           # HTML templates
+│       ├── static/              # Static files (CSS, JS, images)
+│       ├── migrations/          # Database migrations
+│       └── tests/               # Test files
+└── staticfiles/                 # Collected static files (generated)
 ```
 
 ## Setup Instructions
@@ -117,7 +122,7 @@ pytest
 3. Connect your GitHub repository
 4. Set the following:
    - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `gunicorn DigiTrackProject.DigiTrackProject.wsgi:application`
+   - **Start Command**: `gunicorn config.wsgi:application`
 5. Add environment variables:
    - `SECRET_KEY`: Your Django secret key
    - `DEBUG`: False

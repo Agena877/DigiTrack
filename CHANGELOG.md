@@ -1,5 +1,63 @@
 # DigiTrack Project - Cleanup and Fixes Summary
 
+## Latest Update: File Structure Reorganization (October 26, 2025)
+
+### ✅ Major Structure Refactoring
+The project has been completely reorganized from a confusing nested structure to a clean, standard Django layout:
+
+**Old Structure (Nested & Confusing):**
+```
+DigiTrack/
+└── DigiTrackProject/
+    ├── DigiTrackProject/  ← Unnecessary nesting
+    │   └── settings.py, urls.py, wsgi.py, etc.
+    └── tourism/
+```
+
+**New Structure (Clean & Standard):**
+```
+DigiTrack/
+├── config/          ← Django project configuration
+├── apps/
+│   └── tourism/     ← Application code
+├── staticfiles/     ← Collected static files
+├── manage.py
+└── requirements.txt
+```
+
+### Changes Made:
+1. **✅ Created `config/` directory** - Contains all Django project settings (settings.py, urls.py, wsgi.py, asgi.py)
+2. **✅ Created `apps/` directory** - Contains all Django applications (tourism app)
+3. **✅ Moved tourism app** - From `DigiTrackProject/tourism/` to `apps/tourism/`
+4. **✅ Moved static files** - From nested location to root `staticfiles/`
+5. **✅ Removed nested DigiTrackProject/** - Eliminated confusing double-nested directory
+6. **✅ Updated all imports** - Changed from `DigiTrackProject.DigiTrackProject.*` to `config.*`
+7. **✅ Updated all app references** - Changed from `DigiTrackProject.tourism` to `apps.tourism`
+
+### Files Updated:
+- `manage.py` - Settings module: `DigiTrackProject.DigiTrackProject.settings` → `config.settings`
+- `config/settings.py` - ROOT_URLCONF: `DigiTrackProject.DigiTrackProject.urls` → `config.urls`
+- `config/settings.py` - WSGI_APPLICATION: `DigiTrackProject.DigiTrackProject.wsgi.application` → `config.wsgi.application`
+- `config/settings.py` - INSTALLED_APPS: `DigiTrackProject.tourism` → `apps.tourism`
+- `config/urls.py` - Tourism URLs: `DigiTrackProject.tourism.urls` → `apps.tourism.urls`
+- `config/wsgi.py` - Settings module reference updated
+- `config/asgi.py` - Settings module reference updated
+- `apps/tourism/apps.py` - App name: `DigiTrackProject.tourism` → `apps.tourism`
+- `Procfile` - WSGI path: `DigiTrackProject.DigiTrackProject.wsgi:application` → `config.wsgi:application`
+- `pytest.ini` - Settings module: `DigiTrackProject.DigiTrackProject.settings` → `config.settings`
+- `README.md` - Updated project structure documentation
+- `CHANGELOG.md` - This file, updated with new structure information
+
+### Verification:
+- ✅ `python manage.py check` - **No issues found**
+- ✅ `python manage.py collectstatic` - **Works perfectly**
+- ✅ All imports properly resolved
+- ✅ Django can find all apps and templates
+
+---
+
+## Previous Updates
+
 ## Issues Fixed
 
 ### 1. ✅ Project Structure Issues
@@ -48,12 +106,13 @@
 ### Configuration Summary
 ```
 Project Root: DigiTrack/
-Django Project: DigiTrackProject/DigiTrackProject/
-App Location: DigiTrackProject/tourism/
-Settings Module: DigiTrackProject.DigiTrackProject.settings
-URL Config: DigiTrackProject.DigiTrackProject.urls
-WSGI App: DigiTrackProject.DigiTrackProject.wsgi.application
-App Label: tourism (with full name DigiTrackProject.tourism)
+Django Config: config/
+Apps Location: apps/
+Tourism App: apps/tourism/
+Settings Module: config.settings
+URL Config: config.urls
+WSGI App: config.wsgi.application
+App Label: tourism (with full name apps.tourism)
 ```
 
 ## What's Working Now

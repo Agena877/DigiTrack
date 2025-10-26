@@ -1,1 +1,1 @@
-web: gunicorn DigiTrackProject.DigiTrackProject.wsgi:application
+web: gunicorn config.wsgi:application
