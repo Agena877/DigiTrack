@@ -3063,6 +3063,31 @@ document.addEventListener('DOMContentLoaded', function() {
         // silent fail — keep behavior non-blocking
         console.error('Error initializing Today button:', err);
     }
+    // --- Prev / Next button handlers ---
+    try {
+        const prevBtn = document.getElementById('calendar-prev-btn');
+        const nextBtn = document.getElementById('calendar-next-btn');
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function() {
+                // decrement month, roll year if needed
+                let m = calendarState.month - 1;
+                let y = calendarState.year;
+                if (m < 1) { m = 12; y -= 1; }
+                setCalendarState(y, m);
+            });
+        }
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function() {
+                // increment month, roll year if needed
+                let m = calendarState.month + 1;
+                let y = calendarState.year;
+                if (m > 12) { m = 1; y += 1; }
+                setCalendarState(y, m);
+            });
+        }
+    } catch (err) {
+        console.error('Error initializing Prev/Next buttons:', err);
+    }
 });
         function getEventColor(status) {
             switch (status) {
