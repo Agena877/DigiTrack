@@ -401,7 +401,12 @@ def edit_homestay_user_api(request):
                 except Exception:
                     pass
         if status is not None:
-            user.is_active = True if str(status).lower() in ('active', 'true', '1') else False
+            # Handle both Active/Inactive and Archived status
+            status_lower = str(status).lower()
+            if status_lower in ('active', 'true', '1'):
+                user.is_active = True
+            elif status_lower in ('archived', 'inactive', 'false', '0'):
+                user.is_active = False
 
         # Handle password change if provided
         if password:
@@ -715,7 +720,7 @@ def homestay_user_list_api(request):
                 'ownerName': h.owner.name,
                 'address': h.address,
                 'username': h.owner.username,
-                'status': 'Active' if h.owner.is_active else 'Inactive',
+                'status': 'Active' if h.owner.is_active else 'Archived',
                 'totalGuests': total_guests
             })
         # Also include MTO staff and admin accounts for superuser view
@@ -758,7 +763,7 @@ def api_homestay_search(request):
             'ownerName': h.owner.name if h.owner else '',
             'address': h.address,
             'username': h.owner.username if h.owner else '',
-            'status': 'Active' if h.owner and h.owner.is_active else 'Inactive',
+            'status': 'Active' if h.owner and h.owner.is_active else 'Archived',
             'totalGuests': total_guests
         })
     return JsonResponse({'success': True, 'users': user_list})

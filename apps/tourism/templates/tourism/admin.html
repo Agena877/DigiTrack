@@ -1463,6 +1463,32 @@
                 width: 95vw;
                 padding: 20px;
                 margin: 20px;
+            }
+
+            /* Custom modal mobile styles */
+            #customAlertModal .modal-content,
+            #customConfirmModal .modal-content {
+                width: 95vw !important;
+                max-width: 400px !important;
+                padding: 20px !important;
+                border-radius: 12px !important;
+            }
+
+            #customAlertModal .modal-content h3,
+            #customConfirmModal .modal-content h3 {
+                font-size: 18px !important;
+            }
+
+            #customAlertModal .modal-content p,
+            #customConfirmModal .modal-content p {
+                font-size: 14px !important;
+            }
+
+            #customAlertModal .modal-content button,
+            #customConfirmModal .modal-content button {
+                padding: 12px 20px !important;
+                font-size: 14px !important;
+                min-width: 80px !important;
                 max-height: 90vh;
                 overflow-y: auto;
             }
@@ -1949,11 +1975,105 @@
         </div>
     </div>
 
+    <!-- Custom Alert Modal -->
+    <div id="customAlertModal" class="modal">
+        <div class="modal-content" style="width: 400px; max-width: 90vw;">
+            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                <i id="alert-icon" class="fas fa-info-circle" style="font-size: 24px; margin-right: 12px; color: var(--primary-color);"></i>
+                <h3 id="alert-title" style="margin: 0; color: var(--text-dark);">Notification</h3>
+            </div>
+            <p id="alert-message" style="color: var(--text-dark); line-height: 1.5; margin-bottom: 24px;"></p>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="closeCustomAlert()" style="background: var(--primary-color); color: white; padding: 10px 20px; border: none; border-radius: var(--border-radius); cursor: pointer; font-weight: 500;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="customConfirmModal" class="modal">
+        <div class="modal-content" style="width: 400px; max-width: 90vw;">
+            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                <i class="fas fa-question-circle" style="font-size: 24px; margin-right: 12px; color: var(--warning-color);"></i>
+                <h3 style="margin: 0; color: var(--text-dark);">Confirm Action</h3>
+            </div>
+            <p id="confirm-message" style="color: var(--text-dark); line-height: 1.5; margin-bottom: 24px;"></p>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="closeCustomConfirm(false)" style="background: var(--text-muted); color: white; padding: 10px 20px; border: none; border-radius: var(--border-radius); cursor: pointer; font-weight: 500;">Cancel</button>
+                <button type="button" onclick="closeCustomConfirm(true)" style="background: var(--primary-color); color: white; padding: 10px 20px; border: none; border-radius: var(--border-radius); cursor: pointer; font-weight: 500;">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Global variables
         let currentEditingRow = null;
         let currentHomestayPage = 1;
         const itemsPerPage = 3;
+        let confirmCallback = null;
+        let allUsersData = []; // Store all users data for dashboard statistics
+
+        // Custom Alert Functions
+        function showCustomAlert(message, type = 'info', title = 'Notification') {
+            const modal = document.getElementById('customAlertModal');
+            const icon = document.getElementById('alert-icon');
+            const titleElement = document.getElementById('alert-title');
+            const messageElement = document.getElementById('alert-message');
+
+            // Set icon and colors based on type
+            switch (type) {
+                case 'success':
+                    icon.className = 'fas fa-check-circle';
+                    icon.style.color = 'var(--success-color)';
+                    break;
+                case 'error':
+                    icon.className = 'fas fa-exclamation-triangle';
+                    icon.style.color = 'var(--danger-color)';
+                    break;
+                case 'warning':
+                    icon.className = 'fas fa-exclamation-circle';
+                    icon.style.color = 'var(--warning-color)';
+                    break;
+                default:
+                    icon.className = 'fas fa-info-circle';
+                    icon.style.color = 'var(--primary-color)';
+            }
+
+            titleElement.textContent = title;
+            messageElement.textContent = message;
+            modal.style.display = 'flex';
+        }
+
+        function closeCustomAlert() {
+            document.getElementById('customAlertModal').style.display = 'none';
+        }
+
+        function showCustomConfirm(message, callback) {
+            const modal = document.getElementById('customConfirmModal');
+            const messageElement = document.getElementById('confirm-message');
+            
+            messageElement.textContent = message;
+            confirmCallback = callback;
+            modal.style.display = 'flex';
+        }
+
+        function closeCustomConfirm(result) {
+            document.getElementById('customConfirmModal').style.display = 'none';
+            if (confirmCallback) {
+                confirmCallback(result);
+                confirmCallback = null;
+            }
+        }
+
+        // Override default alert and confirm
+        function customAlert(message) {
+            const type = message.toLowerCase().includes('success') ? 'success' : 
+                        message.toLowerCase().includes('error') || message.toLowerCase().includes('failed') ? 'error' : 'info';
+            showCustomAlert(message, type);
+        }
+
+        function customConfirm(message, callback) {
+            showCustomConfirm(message, callback);
+        }
 
         // Initialize the dashboard
         // Fetch all homestay users from backend and render in User Management table
@@ -1984,6 +2104,11 @@
                 });
                 const result = await response.json();
                 console.log('Full API response:', result);
+                console.log('Users received:', result.users);
+                
+                // Store all users data globally for dashboard statistics
+                allUsersData = result.users || [];
+                
                 const tbody = document.getElementById('user-table-body');
                 const archiveTBody = document.getElementById('archive-table-body');
                 tbody.innerHTML = '';
@@ -1992,9 +2117,13 @@
                 if (result.success && Array.isArray(result.users) && result.users.length > 0) {
                     let activeUserIndex = 1;
                     let archivedUserIndex = 1;
+                    let archivedCount = 0;
                     
                     result.users.forEach((user) => {
+                        console.log('Processing user:', user.username, 'Status:', user.status);
                         if (user.status && user.status.toLowerCase() === 'archived') {
+                            archivedCount++;
+                            console.log('Adding archived user to archive table:', user.username);
                             // Add to archive table
                             const archiveRow = archiveTBody.insertRow();
                             archiveRow.innerHTML = `
@@ -2027,6 +2156,8 @@
                             `;
                         }
                     });
+                    
+                    console.log(`Total users processed: ${result.users.length}, Archived users: ${archivedCount}`);
                 } else if (result.success && Array.isArray(result.users) && result.users.length === 0) {
                     const emptyRow = document.createElement('tr');
                     emptyRow.innerHTML = `<td colspan="8" style="text-align:center; color:#888; font-style:italic;">No users found in the database.</td>`;
@@ -2039,6 +2170,10 @@
                 
                 // Check if archive is empty and show message
                 checkArchiveEmpty();
+                
+                // Log archive table status
+                const archiveRows = document.querySelectorAll('#archive-table-body tr:not(.empty-message)');
+                console.log(`Archive table now has ${archiveRows.length} rows`);
                 updateDashboardStats && updateDashboardStats();
                 renderManageUserTable && renderManageUserTable();
                 // Render MTO staff/admin accounts if present
@@ -2185,7 +2320,7 @@
             const name = document.getElementById('mto-input-name').value.trim();
             const password = document.getElementById('mto-input-password').value;
             const status = document.getElementById('mto-input-status').value;
-            if (!username) return alert('Missing username');
+            if (!username) return customAlert('Missing username');
             const csrftoken = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '';
             const payload = { username: username, name: name, status: status };
             if (password && password.trim() !== '') payload.password = password;
@@ -2222,10 +2357,10 @@
                     closeMTOEditModal();
                     renderManageUserTable();
                 } else {
-                    alert('Failed to save: ' + (result.error || 'Unknown'));
+                    customAlert('Failed to save: ' + (result.error || 'Unknown'));
                 }
             })
-            .catch(() => alert('Error saving account'));
+            .catch(() => customAlert('Error saving account'));
         }
 
         // Toggle active status for MTO account — calls new /api/edit_user/ endpoint
@@ -2289,10 +2424,10 @@
                     updateDashboardStats();
                     renderManageUserTable();
                 } else {
-                    alert('Failed to update account: ' + (result.error || 'Unknown'));
+                    customAlert('Failed to update account: ' + (result.error || 'Unknown'));
                 }
             })
-            .catch(() => alert('Error updating account'));
+            .catch(() => customAlert('Error updating account'));
         }
 
         document.addEventListener('DOMContentLoaded', async function() {
@@ -2542,9 +2677,9 @@
                         updateUserCount && updateUserCount();
                         renderMobileUserCards && renderMobileUserCards();
                         closeAddUserModal();
-                        alert('User updated successfully!');
+                        customAlert('User updated successfully!');
                     } else {
-                        alert('Failed to update user.\n' + (result.error || 'No error details from backend.'));
+                        customAlert('Failed to update user. ' + (result.error || 'No error details from backend.'));
                     }
                 })
                 .catch(async (err) => {
@@ -2555,7 +2690,7 @@
                             errorMsg += '\n' + (data.error || JSON.stringify(data));
                         } catch {}
                     }
-                    alert(errorMsg);
+                    customAlert(errorMsg);
                 });
             } else {
                 // Adding new user
@@ -2594,15 +2729,15 @@
                         updateUserCount && updateUserCount();
                         renderMobileUserCards && renderMobileUserCards();
                         closeAddUserModal();
-                        alert('User added successfully!');
+                        customAlert('User added successfully!');
                     } else if (result.suggested_username) {
                         // Username taken, show error and suggest username
-                        alert('Username already exists. Suggested: ' + result.suggested_username);
+                        customAlert('Username already exists. Suggested: ' + result.suggested_username);
                         document.getElementById('inputUsername').value = result.suggested_username;
                         document.getElementById('inputUsername').focus();
                     } else {
                         // Show backend error message in alert
-                        alert('Failed to add user.\n' + (result.error || 'No error details from backend.'));
+                        customAlert('Failed to add user. ' + (result.error || 'No error details from backend.'));
                     }
                 })
                 .catch(async (err) => {
@@ -2613,7 +2748,7 @@
                             errorMsg += '\n' + (data.error || JSON.stringify(data));
                         } catch {}
                     }
-                    alert(errorMsg);
+                    customAlert(errorMsg);
                 });
             }
         }
@@ -2676,18 +2811,19 @@
             const username = cells[4].textContent;
             
             // Confirm archive action
-            if (!confirm(`Are you sure you want to archive user: ${username}?`)) {
-                return;
-            }
+            customConfirm(`Are you sure you want to archive user: ${username}?`, (confirmed) => {
+                if (!confirmed) return;
 
-            // Prepare user data for archiving
-            const userData = {
-                username: username,
-                homestayName: cells[1].textContent,
-                ownerName: cells[2].textContent,
-                address: cells[3].textContent,
-                status: 'Archived'
-            };
+                // Prepare user data for archiving
+                const userData = {
+                    username: username,
+                    homestayName: cells[1].textContent,
+                    ownerName: cells[2].textContent,
+                    address: cells[3].textContent,
+                    status: 'Archived'
+                };
+
+                console.log('Archiving user with data:', userData);
 
             const csrftoken = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '';
             
@@ -2702,41 +2838,30 @@
             })
             .then(response => response.json())
             .then(result => {
+                console.log('Archive response:', result);
                 if (result.success) {
-                    // Move to archive table in UI
-                    const archiveTableBody = document.getElementById('archive-table-body');
-                    // Remove empty message if it exists
-                    const emptyMessage = archiveTableBody.querySelector('.empty-message');
-                    if (emptyMessage) {
-                        emptyMessage.remove();
-                    }
-                    const archiveRow = archiveTableBody.insertRow();
-                    const currentDate = new Date().toLocaleDateString();
-                    archiveRow.innerHTML = `
-                        <td>${cells[0].textContent}</td>
-                        <td>${cells[1].textContent}</td>
-                        <td>${cells[2].textContent}</td>
-                        <td>${cells[3].textContent}</td>
-                        <td>${cells[4].textContent}</td>
-                        <td><span class="status-badge status-archived">Archived</span></td>
-                        <td>${currentDate}</td>
-                        <td class="action-icons">
-                            <i class="fas fa-undo restore-icon" title="Restore" onclick="restoreUser(this)"></i>
-                        </td>
-                    `;
-                    // Remove from active users
-                    row.remove();
-                    updateUserCount();
-                    updateDashboardStats();
-                    renderManageUserTable();
-                    alert('User successfully archived!');
+                    customAlert('User successfully archived!');
+                    
+                    // Refresh user list from backend to properly separate active and archived users
+                    fetchAndRenderHomestayUsers().then(() => {
+                        updateUserCount();
+                        updateDashboardStats();
+                        renderManageUserTable();
+                        console.log('User data refreshed after archive operation');
+                    });
+                    
+                    // Automatically switch to archive tab to show the archived user
+                    setTimeout(() => {
+                        switchTab('archive');
+                    }, 500);
                 } else {
-                    alert('Error archiving user: ' + (result.error || 'Unknown error'));
+                    customAlert('Error archiving user: ' + (result.error || 'Unknown error'));
                 }
             })
             .catch(error => {
                 console.error('Archive error:', error);
-                alert('Error archiving user. Please try again.');
+                customAlert('Error archiving user. Please try again.');
+            });
             });
         }
 
@@ -2746,11 +2871,10 @@
             const username = cells[4].textContent;
             
             // Confirm restore action
-            if (!confirm(`Are you sure you want to restore user: ${username}?`)) {
-                return;
-            }
+            customConfirm(`Are you sure you want to restore user: ${username}?`, (confirmed) => {
+                if (!confirmed) return;
 
-            // Prepare user data for restoring
+                // Prepare user data for restoring
             const userData = {
                 username: username,
                 homestayName: cells[1].textContent,
@@ -2758,6 +2882,8 @@
                 address: cells[3].textContent,
                 status: 'Active'
             };
+
+            console.log('Restoring user with data:', userData);
 
             const csrftoken = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '';
             
@@ -2772,38 +2898,30 @@
             })
             .then(response => response.json())
             .then(result => {
+                console.log('Restore response:', result);
                 if (result.success) {
-                    // Move back to active users table in UI
-                    const userTableBody = document.getElementById('user-table-body');
-                    const userRow = userTableBody.insertRow();
-                    userRow.innerHTML = `
-                        <td>${cells[0].textContent}</td>
-                        <td>${cells[1].textContent}</td>
-                        <td>${cells[2].textContent}</td>
-                        <td>${cells[3].textContent}</td>
-                        <td>${cells[4].textContent}</td>
-                        <td>••••••••</td>
-                        <td><span class="status-badge status-active">Active</span></td>
-                        <td class="action-icons">
-                            <i class="fas fa-edit edit-icon" title="Edit" onclick="editUser(this)"></i>
-                            <i class="fas fa-trash delete-icon" title="Delete" onclick="deleteUser(this)"></i>
-                        </td>
-                    `;
-                    // Remove from archive
-                    row.remove();
-                    updateUserCount();
-                    updateDashboardStats();
-                    renderManageUserTable();
-                    // Check if archive is now empty
-                    checkArchiveEmpty();
-                    alert('User successfully restored!');
+                    customAlert('User successfully restored!');
+                    
+                    // Refresh user list from backend to properly separate active and archived users
+                    fetchAndRenderHomestayUsers().then(() => {
+                        updateUserCount();
+                        updateDashboardStats();
+                        renderManageUserTable();
+                        console.log('User data refreshed after restore operation');
+                    });
+                    
+                    // Automatically switch to users tab to show the restored user
+                    setTimeout(() => {
+                        switchTab('users');
+                    }, 500);
                 } else {
-                    alert('Error restoring user: ' + (result.error || 'Unknown error'));
+                    customAlert('Error restoring user: ' + (result.error || 'Unknown error'));
                 }
             })
             .catch(error => {
                 console.error('Restore error:', error);
-                alert('Error restoring user. Please try again.');
+                customAlert('Error restoring user. Please try again.');
+            });
             });
         }
 
@@ -2839,8 +2957,9 @@
         }
 
         function updateUserCount() {
-            const userCount = document.querySelectorAll('#user-table-body tr').length;
-            document.getElementById('user-count').textContent = userCount;
+            // Use total users from global data (includes archived users)
+            const totalUsers = Array.isArray(allUsersData) ? allUsersData.length : 0;
+            document.getElementById('user-count').textContent = totalUsers;
         }
 
         // Dashboard functions
@@ -3161,28 +3280,32 @@
 
         // Add dashboard stats update for active/inactive users
         function updateDashboardStats() {
-            // Count users by status
-            let active = 0, inactive = 0, total = 0;
-            document.querySelectorAll('#user-table-body tr').forEach(row => {
-                const statusCell = row.cells[6];
-                if (statusCell) {
-                    const status = statusCell.textContent.trim().toLowerCase();
-                    if (status === 'active') active++;
-                    else if (status === 'inactive') inactive++;
+            // Count users by status using global allUsersData (includes archived users)
+            let active = 0, archived = 0, total = 0;
+            let homestayNames = new Set();
+            
+            if (Array.isArray(allUsersData)) {
+                allUsersData.forEach(user => {
+                    const status = (user.status || '').toLowerCase();
+                    if (status === 'active') {
+                        active++;
+                    } else if (status === 'archived') {
+                        archived++;
+                    }
                     total++;
-                }
-            });
+                    
+                    // Add homestay name to set (for unique count)
+                    if (user.homestayName) {
+                        homestayNames.add(user.homestayName.trim());
+                    }
+                });
+            }
+            
+            // Update dashboard counts - total includes both active and archived
             document.getElementById('active-user-count').textContent = active;
-            document.getElementById('inactive-user-count').textContent = inactive;
-            document.getElementById('user-count').textContent = total;
-
-            // Registered Homestays = number of unique homestay names in user table
-            const homestayNames = new Set();
-            document.querySelectorAll('#user-table-body tr').forEach(row => {
-                const cell = row.cells[1];
-                if (cell) homestayNames.add(cell.textContent.trim());
-            });
-            document.getElementById('homestay-count').textContent = homestayNames.size;
+            document.getElementById('inactive-user-count').textContent = archived;
+            document.getElementById('user-count').textContent = total; // Total = Active + Archived
+            document.getElementById('homestay-count').textContent = homestayNames.size; // All homestays including archived
         }
 
         function renderManageUserTable() {
@@ -3302,11 +3425,11 @@ function suspendUser(btn) {
             updateDashboardStats();
             renderManageUserTable();
         } else {
-            alert('Failed to suspend user. ' + (result.error || ''));
+            customAlert('Failed to suspend user. ' + (result.error || ''));
         }
     })
     .catch(() => {
-        alert('Error suspending user.');
+        customAlert('Error suspending user.');
     });
 }
 
@@ -3346,11 +3469,11 @@ function unsuspendUser(btn) {
             updateDashboardStats();
             renderManageUserTable();
         } else {
-            alert('Failed to unsuspend user. ' + (result.error || ''));
+            customAlert('Failed to unsuspend user. ' + (result.error || ''));
         }
     })
     .catch(() => {
-        alert('Error unsuspending user.');
+        customAlert('Error unsuspending user.');
     });
 }
     </script>
