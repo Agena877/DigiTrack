@@ -164,6 +164,7 @@
             height: 90px;
             z-index: 1100;
             backdrop-filter: blur(10px);
+            overflow: visible;
         }
         
         .header-logo {
@@ -1832,6 +1833,98 @@
                 font-weight: 500;
             }
 
+            /* Homestay Mobile Cards - Hidden on desktop */
+            .homestay-mobile-cards {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                overflow: hidden !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            /* Only show homestay mobile cards on small screens (mobile devices) */
+            @media (max-width: 576px) {
+                .homestay-mobile-cards {
+                    display: block !important;
+                    visibility: visible !important;
+                    height: auto !important;
+                    overflow: visible !important;
+                    margin: inherit !important;
+                    padding: inherit !important;
+                }
+            }
+            
+            /* Homestay mobile card styles */
+            .homestay-card {
+                background: var(--white);
+                border-radius: var(--border-radius-lg);
+                padding: 20px;
+                margin-bottom: 16px;
+                box-shadow: var(--shadow-md);
+                border: 1px solid var(--border-color);
+                transition: var(--transition);
+            }
+
+            .homestay-card:hover {
+                box-shadow: var(--shadow-lg);
+                transform: translateY(-2px);
+            }
+
+            .homestay-card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 16px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .homestay-card-name {
+                font-size: 18px;
+                font-weight: 700;
+                color: var(--text-dark);
+                margin: 0;
+            }
+
+            .homestay-card-status {
+                flex-shrink: 0;
+                margin-left: 10px;
+            }
+
+            .homestay-card-info {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .homestay-card-field {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .homestay-card-field:last-child {
+                border-bottom: none;
+            }
+
+            .homestay-card-field strong {
+                font-size: 14px;
+                color: var(--text-muted);
+                font-weight: 600;
+                flex-shrink: 0;
+                margin-right: 12px;
+            }
+
+            .homestay-card-field span {
+                font-size: 14px;
+                color: var(--text-dark);
+                font-weight: 500;
+                text-align: right;
+            }
+
             /* Horizontal scroll for tables on medium screens */
             .table-container {
                 overflow-x: auto;
@@ -1842,6 +1935,31 @@
             .tourist-table,
             .homestay-table {
                 min-width: 600px;
+            }
+        }
+        
+        /* Desktop/Web view - Show tables, hide mobile cards */
+        @media (min-width: 577px) {
+            .homestay-table {
+                display: table !important;
+                visibility: visible !important;
+            }
+            
+            .homestay-mobile-cards {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                overflow: hidden !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                position: absolute !important;
+                left: -9999px !important;
+                top: -9999px !important;
+            }
+            
+            .homestay-mobile-cards * {
+                display: none !important;
+                visibility: hidden !important;
             }
         }
         
@@ -1869,6 +1987,7 @@
                 width: 100%;
                 max-width: 100vw;
                 overflow-x: hidden;
+                overflow-y: visible;
             }
 
             .header-logo {
@@ -2046,6 +2165,20 @@
             
             .homestay-table th {
                 font-size: 10px;
+            }
+            
+            /* Hide homestay table on mobile, show mobile cards instead */
+            .homestay-table {
+                display: none !important;
+            }
+            
+            .homestay-mobile-cards {
+                display: block !important;
+                visibility: visible !important;
+                height: auto !important;
+                overflow: visible !important;
+                margin: inherit !important;
+                padding: inherit !important;
             }
             
             .charts-container {
@@ -2247,6 +2380,55 @@
                 margin-right: 0;
                 min-height: 48px;
                 font-size: 16px;
+            }
+
+            /* Hide dropdown completely on mobile - direct modal instead */
+            #user-dropdown {
+                display: none !important;
+                visibility: hidden !important;
+                pointer-events: none !important;
+            }
+
+            #user-dropdown .ud-content {
+                background: #ffffff !important;
+                border: 2px solid var(--primary-color) !important;
+                border-radius: 12px !important;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+                padding: 12px !important;
+                min-width: 200px !important;
+                max-width: 280px !important;
+            }
+
+            #user-dropdown .ud-btn {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                width: 100% !important;
+                padding: 16px 20px !important;
+                font-size: 16px !important;
+                font-weight: 600 !important;
+                min-height: 52px !important;
+                border-radius: 8px !important;
+                margin-bottom: 4px !important;
+                color: var(--text-dark) !important;
+                background: transparent !important;
+                border: none !important;
+                cursor: pointer !important;
+                transition: all 0.2s ease !important;
+            }
+
+            #user-dropdown .ud-btn:hover,
+            #user-dropdown .ud-btn:active {
+                background: var(--primary-color) !important;
+                color: #ffffff !important;
+                transform: translateX(2px) !important;
+            }
+
+            #user-dropdown .ud-btn i {
+                margin-right: 12px !important;
+                font-size: 18px !important;
+                width: 20px !important;
+                text-align: center !important;
             }
         }
 
@@ -2715,6 +2897,12 @@
                                     <!-- Homestay rows will be rendered here -->
                                 </tbody>
                             </table>
+                            
+                            <!-- Mobile Cards for Homestays -->
+                            <div class="homestay-mobile-cards" id="homestay-mobile-cards">
+                                <!-- Mobile homestay cards will be rendered here -->
+                            </div>
+                            
                             <!-- Pagination controls for homestay list -->
                             <div id="homestay-pagination" style="margin-top:12px;display:flex;align-items:center;gap:8px;justify-content:flex-end;">
                                 <button id="prev-btn" onclick="goToHomestayPage('prev')" style="padding:6px 10px;border-radius:6px;border:1px solid #ccc;background:#fff;">Previous</button>
@@ -2816,6 +3004,18 @@
                 return;
             }
             
+            // Update global tourists array for homestay calculations
+            tourists = data.map(t => ({
+                homestayName: t.homestay__name || 'Unknown',
+                numTourist: t.num_people || 1,
+                guestName: t.guest_name || 'Unknown',
+                contactNumber: t.contact_number || '-',
+                address: t.address || '-',
+                dateArrival: t.date_arrival || t.date || '-',
+                dateDeparture: t.date_departure || '-',
+                status: t.status || 'active'
+            }));
+            
             // Populate table
             tbody.innerHTML = '';
             // Clear mobile cards for desktop, prepare for mobile
@@ -2889,6 +3089,10 @@
                     mobileCards.appendChild(card);
                 }
             });
+            
+            // Update dashboard stats and homestay list after loading tourists data
+            await updateDashboardStatsAndCharts();
+            
         } catch (err) {
             tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error loading data.</td></tr>';
             if (mobileCards && window.innerWidth <= 576) {
@@ -2964,7 +3168,7 @@
                             showPage('tourist-management-page');
                             loadTouristTableAndDashboard();
                             renderTouristCharts && renderTouristCharts();
-                            loadHomestayData && loadHomestayData();
+                            renderHomestayList && renderHomestayList();
                         }, 300);
                     } else {
                         messageDiv.style.color = 'red';
@@ -3032,12 +3236,13 @@
 
     // Homestay data will be loaded from backend
     let homestayData = [];
+    let totalHomestayCount = 0;
 
         // Initialize the dashboard
         document.addEventListener('DOMContentLoaded', function() {
             initializeNavigation();
             initializeDashboard();
-            loadHomestayData();
+            // loadHomestayData(); // Removed - using renderHomestayList() instead
         });
 
         // Navigation functions
@@ -3353,14 +3558,15 @@
 
         // Dashboard functions
         function initializeDashboard() {
-            loadHomestayData();
+            // loadHomestayData(); // Removed - using renderHomestayList() instead
         }
 
 
         // Fetch homestay data from backend and render
         async function loadHomestayData() {
             try {
-                const resp = await fetch('/api/homestay_users/');
+                // Add cache-busting parameter to get fresh data
+                const resp = await fetch(`/api/homestay_users/?_t=${Date.now()}`);
                 const result = await resp.json();
                 if (result.success && Array.isArray(result.users)) {
                     homestayData = result.users.map(u => ({
@@ -3444,7 +3650,8 @@
         }
 
         function goToHomestayPage(page) {
-            const totalPages = Math.ceil(homestayData.length / itemsPerPage);
+            const itemsPerPage = 3;
+            const totalPages = Math.ceil(totalHomestayCount / itemsPerPage);
             
             if (page === 'prev' && currentHomestayPage > 1) {
                 currentHomestayPage--;
@@ -3461,8 +3668,8 @@
             loadingIndicator.style.display = 'block';
             homestayTable.classList.add('slide-out');
             
-            setTimeout(() => {
-                loadHomestayData();
+            setTimeout(async () => {
+                await renderHomestayList();
                 homestayTable.classList.remove('slide-out');
                 homestayTable.classList.add('slide-in-active');
                 loadingIndicator.style.display = 'none';
@@ -3658,76 +3865,148 @@
         let tourists = [];
 
         // --- Dashboard Data Update ---
-        function updateDashboardStatsAndCharts() {
+        async function updateDashboardStatsAndCharts() {
             // Update tourist count (sum of all guests)
             const totalGuests = tourists.reduce((sum, t) => sum + (parseInt(t.numTourist) || 0), 0);
             document.getElementById('tourist-count').textContent = totalGuests;
 
-            // Update homestay count (unique homestays from tourists)
-            const homestaySet = new Set(tourists.map(t => t.homestayName));
-            document.getElementById('homestay-count').textContent = homestaySet.size;
+            // Note: Homestay count is now updated in renderHomestayList() using actual database data
 
             // Update homestay list table
-            renderHomestayList();
+            await renderHomestayList();
 
             // Update charts
             updateTouristCharts();
         }
 
-        // Example: Add homestay owner and status per homestay
-    // For demo, we use a static mapping for owner/status per homestay name
-    const homestayInfo = {
-        "Seaside Haven Homestay": { owner: "Ana Cruz", status: "Active" },
-        "Mountain Breeze Homestay": { owner: "Ben Santos", status: "Active" },
-        "Sunset Bay Homestay": { owner: "Carla Reyes", status: "Inactive" },
-        "Palm Grove Homestay": { owner: "Dino Lim", status: "Active" },
-        "Lakeside Retreat Homestay": { owner: "Ella Ramos", status: "Active" },
-        "Coral Reef Homestay": { owner: "Faye Tan", status: "Active" },
-        "Golden Fields Homestay": { owner: "Gino dela Cruz", status: "Inactive" },
-        "Harbor View Homestay": { owner: "Hannah Uy", status: "Active" },
-        "Hilltop Haven Homestay": { owner: "Ivan Lee", status: "Active" },
-        "Riverside Bliss Homestay": { owner: "Jessa Go", status: "Active" },
-        "Garden Escape Homestay": { owner: "Kiko Torres", status: "Active" },
-        "Coconut Grove Homestay": { owner: "Liza Mendoza", status: "Active" },
-        "Starfish Cove Homestay": { owner: "Manny Cruz", status: "Inactive" },
-        "Lagoon Breeze Homestay": { owner: "Nina Santos", status: "Active" },
-        "Ocean Pearl Homestay": { owner: "Omar Villanueva", status: "Active" },
-        "Bamboo Hideaway Homestay": { owner: "Pia Lim", status: "Active" },
-        "Mango Grove Homestay": { owner: "Quinn Reyes", status: "Active" }
-    };
 
-    function renderHomestayList() {
-        const tbody = document.getElementById('homestay-table-body');
-        tbody.innerHTML = '';
-        // Count guests per homestay
-        const homestayMap = {};
-        tourists.forEach(t => {
-            if (!homestayMap[t.homestayName]) {
-                homestayMap[t.homestayName] = {
-                    count: 0,
-                    owner: (homestayInfo[t.homestayName] && homestayInfo[t.homestayName].owner) || "N/A",
-                    status: (homestayInfo[t.homestayName] && homestayInfo[t.homestayName].status) || "Active"
-                };
-            }
-            homestayMap[t.homestayName].count += parseInt(t.numTourist) || 1;
-        });
-        const homestayNames = Object.keys(homestayMap);
-        if (homestayNames.length === 0) {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td colspan="4" style="text-align:center;color:#888;">No registered homestays.</td>`;
-            tbody.appendChild(tr);
+
+    // Add a flag to prevent multiple simultaneous renders
+    let isRenderingHomestays = false;
+    
+    async function renderHomestayList() {
+        // Prevent multiple simultaneous calls
+        if (isRenderingHomestays) {
+            console.log('Already rendering homestays, skipping...');
             return;
         }
         
+        isRenderingHomestays = true;
+        console.log('Starting renderHomestayList...');
+        
+        const tbody = document.getElementById('homestay-table-body');
+        const mobileCards = document.getElementById('homestay-mobile-cards');
+        
+        // Completely clear both table and mobile cards first
+        tbody.innerHTML = '';
+        if (mobileCards) {
+            mobileCards.innerHTML = '';
+        }
+        
+        // Fetch homestay data from database
+        let homestayData = [];
+        try {
+            const resp = await fetch('/api/homestay_users/');
+            const result = await resp.json();
+            if (result.success && Array.isArray(result.users)) {
+                homestayData = result.users;
+                
+                // Debug: Check for duplicates in source data
+                console.log('Raw homestay data:', homestayData);
+                const homestayNames = homestayData.map(h => h.homestayName);
+                const uniqueNames = [...new Set(homestayNames)];
+                if (homestayNames.length !== uniqueNames.length) {
+                    console.warn('Duplicate homestays found in API response:', 
+                        homestayNames.filter((name, index) => homestayNames.indexOf(name) !== index));
+                }
+            }
+        } catch (err) {
+            console.error('Error fetching homestay data:', err);
+        }
+        
+        // Initialize homestay map with database homestays
+        const homestayMap = {};
+        
+        // Deduplicate homestay data first
+        const uniqueHomestays = [];
+        const seenHomestays = new Set();
+        
+        homestayData.forEach(homestay => {
+            const homestayName = (homestay.homestayName || "").trim();
+            const homestayId = homestay.id || homestay.userId || homestayName; // Use ID if available, fallback to name
+            const uniqueKey = `${homestayId}-${homestayName}`;
+            
+            if (homestayName && !seenHomestays.has(uniqueKey)) {
+                seenHomestays.add(uniqueKey);
+                uniqueHomestays.push(homestay);
+            }
+        });
+        
+        console.log(`Deduplication: ${homestayData.length} raw → ${uniqueHomestays.length} unique homestays`);
+        console.log('Unique homestays after deduplication:', uniqueHomestays.map(h => h.homestayName));
+        
+        // Add unique homestays to map
+        uniqueHomestays.forEach(homestay => {
+            const homestayName = homestay.homestayName.trim();
+            homestayMap[homestayName] = {
+                count: 0,
+                owner: homestay.ownerName || "N/A",
+                status: homestay.status || "Active"
+            };
+        });
+        
+        // Count guests per homestay from tourists data (only for registered homestays)
+        tourists.forEach(t => {
+            const homestayName = (t.homestayName || "").trim(); // Normalize name
+            if (homestayName && homestayMap[homestayName]) {
+                // Only count tourists for homestays that exist in the database
+                homestayMap[homestayName].count += parseInt(t.numTourist) || 1;
+            }
+        });
+        const homestayNames = Object.keys(homestayMap);
+        
+        if (homestayNames.length === 0) {
+            // Empty state for table
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td colspan="4" style="text-align:center;color:#888;">No registered homestays.</td>`;
+            tbody.appendChild(tr);
+            
+            // Empty state for mobile cards (only populate on mobile)
+            if (mobileCards && window.innerWidth <= 576) {
+                const emptyCard = document.createElement('div');
+                emptyCard.className = 'homestay-card empty-state';
+                emptyCard.innerHTML = '<div style="text-align:center;color:#888;padding:40px;">No registered homestays.</div>';
+                mobileCards.appendChild(emptyCard);
+            }
+            return;
+        }
+        
+        // Final deduplication check - ensure unique names only
+        const finalUniqueNames = [...new Set(homestayNames)];
+        console.log(`Final check: ${homestayNames.length} names → ${finalUniqueNames.length} unique names`);
+        console.log('Final homestay list to display:', finalUniqueNames);
+        
         // Sort homestays by tourist count in descending order (most tourists first)
-        homestayNames.sort((a, b) => {
+        finalUniqueNames.sort((a, b) => {
             const countA = homestayMap[a].count;
             const countB = homestayMap[b].count;
             return countB - countA; // Descending order
         });
         
-        homestayNames.forEach(name => {
+        console.log('Rendering homestays:', finalUniqueNames);
+        
+        // Apply pagination - show only 3 items per page
+        const itemsPerPage = 3;
+        const startIndex = (currentHomestayPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageHomestays = finalUniqueNames.slice(startIndex, endIndex);
+        
+        console.log(`Showing page ${currentHomestayPage}: ${pageHomestays.length} of ${finalUniqueNames.length} homestays`);
+        
+        pageHomestays.forEach(name => {
             const info = homestayMap[name];
+            
+            // Create table row
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${name}</td>
@@ -3736,7 +4015,76 @@
                 <td><span class="status-badge status-${info.status.toLowerCase()}">${info.status}</span></td>
             `;
             tbody.appendChild(tr);
+            
+            // Create mobile card (only populate when actually needed for mobile view)
+            if (mobileCards && window.innerWidth <= 576) {
+                const card = document.createElement('div');
+                card.className = 'homestay-card';
+                card.innerHTML = `
+                    <div class="homestay-card-header">
+                        <h3 class="homestay-card-name">${name}</h3>
+                        <div class="homestay-card-status">
+                            <span class="status-badge status-${info.status.toLowerCase()}">${info.status}</span>
+                        </div>
+                    </div>
+                    <div class="homestay-card-info">
+                        <div class="homestay-card-field">
+                            <strong>Owner:</strong>
+                            <span>${info.owner}</span>
+                        </div>
+                        <div class="homestay-card-field">
+                            <strong>No. of Tourists:</strong>
+                            <span>${info.count}</span>
+                        </div>
+                    </div>
+                `;
+                mobileCards.appendChild(card);
+            }
         });
+        
+        // Update global count for pagination
+        totalHomestayCount = finalUniqueNames.length;
+        
+        // Update registered homestay count in dashboard (use actual database count)
+        const homestayCountDiv = document.getElementById('homestay-count');
+        if (homestayCountDiv) {
+            homestayCountDiv.textContent = finalUniqueNames.length;
+        }
+        
+        // Update pagination controls
+        updateHomestayPagination(finalUniqueNames.length);
+        
+        // Reset the rendering flag
+        isRenderingHomestays = false;
+        console.log('Finished rendering homestays');
+    }
+
+    function updateHomestayPagination(totalItems) {
+        const itemsPerPage = 3;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        const paginationDiv = document.getElementById('homestay-pagination');
+        const currentSpan = document.getElementById('homestay-current-page');
+        const totalSpan = document.getElementById('homestay-total-pages');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        
+        if (currentSpan) currentSpan.textContent = currentHomestayPage;
+        if (totalSpan) totalSpan.textContent = totalPages;
+        
+        if (prevBtn) {
+            prevBtn.disabled = currentHomestayPage <= 1;
+            prevBtn.style.opacity = currentHomestayPage <= 1 ? '0.5' : '1';
+        }
+        
+        if (nextBtn) {
+            nextBtn.disabled = currentHomestayPage >= totalPages;
+            nextBtn.style.opacity = currentHomestayPage >= totalPages ? '0.5' : '1';
+        }
+        
+        // Hide pagination if only one page or no items
+        if (paginationDiv) {
+            paginationDiv.style.display = totalPages <= 1 ? 'none' : 'flex';
+        }
     }
 
 
@@ -3898,9 +4246,9 @@
         var dashboardYearlyChart = null;
 
         // --- Initial Render ---
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             renderTouristTable();
-            updateDashboardStatsAndCharts();
+            await updateDashboardStatsAndCharts();
         });
 
         // New renderTouristCharts function
@@ -4229,10 +4577,11 @@
         });
     }
 
-    function handleResponsiveLayout() {
+    async function handleResponsiveLayout() {
         const sidebar = document.querySelector('.sidebar');
         const mobileOverlay = document.getElementById('mobile-overlay');
-        const mobileCards = document.getElementById('tourist-mobile-cards');
+        const touristMobileCards = document.getElementById('tourist-mobile-cards');
+        const homestayMobileCards = document.getElementById('homestay-mobile-cards');
         
         if (window.innerWidth > 768) {
             sidebar.classList.remove('mobile-open');
@@ -4241,13 +4590,26 @@
             document.body.classList.remove('mobile-menu-open');
         }
         
-        // Clear mobile cards if on desktop view (ensure they stay hidden)
-        if (window.innerWidth > 576 && mobileCards) {
-            mobileCards.innerHTML = '';
-            mobileCards.style.display = 'none';
-        } else if (window.innerWidth <= 576 && mobileCards) {
+        // Handle tourist mobile cards
+        if (window.innerWidth > 576 && touristMobileCards) {
+            touristMobileCards.innerHTML = '';
+            touristMobileCards.style.display = 'none';
+        } else if (window.innerWidth <= 576 && touristMobileCards) {
             // On mobile, reload data to populate cards properly
             loadTouristTableAndDashboard();
+        }
+        
+        // Handle homestay mobile cards
+        if (window.innerWidth > 576 && homestayMobileCards) {
+            // Clear mobile cards completely on desktop
+            homestayMobileCards.innerHTML = '';
+            homestayMobileCards.style.display = 'none';
+            homestayMobileCards.style.visibility = 'hidden';
+        } else if (window.innerWidth <= 576 && homestayMobileCards) {
+            // On mobile, refresh homestay data to populate cards properly (if not already rendering)
+            if (!isRenderingHomestays) {
+                await renderHomestayList();
+            }
         }
     }
 
@@ -4323,10 +4685,10 @@
 
         const homestayInput = document.getElementById('homestay-search');
         if (homestayInput) {
-            const debouncedHomestaySearch = debounce(() => {
+            const debouncedHomestaySearch = debounce(async () => {
                 const q = homestayInput.value.trim();
                 if (!q) {
-                    loadHomestayData();
+                    await renderHomestayList();
                 } else {
                     searchHomestays();
                 }
@@ -4360,9 +4722,24 @@
         if (userBtn && dropdown) {
             userBtn.addEventListener('click', (e)=>{
                 const rect = userBtn.getBoundingClientRect();
-                dropdown.style.top = (rect.bottom + 6) + 'px';
-                dropdown.style.right = (window.innerWidth - rect.right) + 'px';
-                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                const isMobile = window.innerWidth <= 576;
+                
+                if (isMobile) {
+                    // For mobile: skip dropdown, show modal directly
+                    e.preventDefault();
+                    e.stopPropagation();
+                    modal.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                    return;
+                } else {
+                    // For desktop: use normal dropdown
+                    dropdown.style.position = 'absolute';
+                    dropdown.style.top = (rect.bottom + 6) + 'px';
+                    dropdown.style.right = (window.innerWidth - rect.right) + 'px';
+                    dropdown.style.left = 'auto';
+                    dropdown.style.zIndex = '1500';
+                    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                }
             });
             document.addEventListener('click', function(e){
                 if (!userBtn.contains(e.target) && !dropdown.contains(e.target)) {
@@ -4370,7 +4747,15 @@
                 }
             });
             userBtn.addEventListener('keydown', function(e){
-                if (e.key === 'Enter' || e.key === ' ') changeBtn.focus();
+                if (e.key === 'Enter' || e.key === ' ') {
+                    const isMobile = window.innerWidth <= 576;
+                    if (isMobile) {
+                        modal.style.display = 'flex';
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        changeBtn.focus();
+                    }
+                }
             });
         }
 
