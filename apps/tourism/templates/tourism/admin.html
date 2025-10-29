@@ -1906,23 +1906,30 @@
                     
                     <!-- Archive Tab Content -->
                     <div id="archive-tab" class="tab-content">
-                        <table class="user-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Homestay Name</th>
-                                    <th>Owner's Name</th>
-                                    <th>Address</th>
-                                    <th>Username</th>
-                                    <th>Status</th>
-                                    <th>Archived Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="archive-table-body">
-                                <!-- Archived users will appear here -->
-                            </tbody>
-                        </table>
+                        <div class="table-container">
+                            <table class="user-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Homestay Name</th>
+                                        <th>Owner's Name</th>
+                                        <th>Address</th>
+                                        <th>Username</th>
+                                        <th>Status</th>
+                                        <th>Archived Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="archive-table-body">
+                                    <!-- Archived users will appear here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Mobile Card Layout for Archive Tab -->
+                        <div class="mobile-user-cards" id="mobile-archive-cards" style="display: none;">
+                            <!-- Mobile archived user cards will be populated by JavaScript -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2591,6 +2598,10 @@
             // Check if archive tab is empty and show message
             if (tabName === 'archive') {
                 checkArchiveEmpty();
+                // Ensure mobile archive cards are rendered when switching to archive tab
+                if (window.innerWidth <= 576) {
+                    renderMobileArchiveCards();
+                }
             }
         }
 
@@ -3122,6 +3133,7 @@
             const mobileCards = document.getElementById('mobile-user-cards');
             const mobileManageCards = document.getElementById('mobile-manage-cards');
             const mobileMtoCards = document.getElementById('mobile-mto-cards');
+            const mobileArchiveCards = document.getElementById('mobile-archive-cards');
             
             if (isMobile) {
                 // Hide all tables
@@ -3138,6 +3150,10 @@
                 if (mobileMtoCards) {
                     mobileMtoCards.style.display = 'block';
                 }
+                if (mobileArchiveCards) {
+                    mobileArchiveCards.style.display = 'block';
+                    renderMobileArchiveCards();
+                }
                 
                 closeMobileMenu();
             } else {
@@ -3148,6 +3164,7 @@
                 if (mobileCards) mobileCards.style.display = 'none';
                 if (mobileManageCards) mobileManageCards.style.display = 'none';
                 if (mobileMtoCards) mobileMtoCards.style.display = 'none';
+                if (mobileArchiveCards) mobileArchiveCards.style.display = 'none';
                 
                 closeMobileMenu();
             }
@@ -3224,6 +3241,64 @@
                         <p>No users found</p>
                     </div>
                 `;
+            }
+        }
+        
+        // Render mobile archive cards
+        function renderMobileArchiveCards() {
+            const mobileArchiveCards = document.getElementById('mobile-archive-cards');
+            if (!mobileArchiveCards) return;
+            
+            const archiveTableBody = document.getElementById('archive-table-body');
+            const archiveRows = archiveTableBody.querySelectorAll('tr:not(.empty-message)');
+            
+            mobileArchiveCards.innerHTML = '';
+            
+            if (archiveRows.length === 0) {
+                mobileArchiveCards.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <i class="fas fa-archive" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                        <p>No archived users found</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            archiveRows.forEach((row, index) => {
+                const cells = row.cells;
+                if (cells.length >= 7) { // Ensure row has enough cells
+                    const card = document.createElement('div');
+                    card.className = 'user-card';
+                    card.innerHTML = `
+                        <div class="user-card-header">
+                            <div class="user-card-title">${cells[1].textContent}</div>
+                            <div class="user-card-subtitle">by ${cells[2].textContent}</div>
+                        </div>
+                        <div class="user-card-info">
+                            <div class="user-card-field"><strong>Address:</strong> ${cells[3].textContent}</div>
+                            <div class="user-card-field"><strong>Username:</strong> ${cells[4].textContent}</div>
+                            <div class="user-card-field"><strong>Status:</strong> ${cells[5].innerHTML}</div>
+                            <div class="user-card-field"><strong>Archived Date:</strong> ${cells[6].textContent}</div>
+                        </div>
+                        <div class="user-card-actions">
+                            <i class="fas fa-undo restore-icon" title="Restore" onclick="restoreUserFromCard(this, ${index})"></i>
+                        </div>
+                    `;
+                    mobileArchiveCards.appendChild(card);
+                }
+            });
+        }
+        
+        // Restore user from mobile archive card
+        function restoreUserFromCard(icon, rowIndex) {
+            const archiveTableBody = document.getElementById('archive-table-body');
+            const row = archiveTableBody.querySelectorAll('tr:not(.empty-message)')[rowIndex];
+            if (row) {
+                restoreUser(row.querySelector('.restore-icon'));
+                // Re-render mobile cards after restoration
+                setTimeout(() => {
+                    renderMobileArchiveCards();
+                }, 500);
             }
         }
         
