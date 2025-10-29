@@ -1459,13 +1459,172 @@
                 box-shadow: 0 2px 6px rgba(0,119,182,0.1);
             }
 
+            /* Enhanced Modal Mobile Responsiveness */
+            .modal {
+                padding: 10px !important;
+                align-items: flex-start !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch;
+                padding-top: 60px !important; /* Account for mobile header */
+            }
+            
             .modal-content {
-                width: 95vw;
-                padding: 20px;
-                margin: 20px;
+                width: 95vw !important;
+                max-width: 400px !important;
+                margin: 0 auto !important;
+                padding: 20px 16px !important;
+                border-radius: 16px !important;
+                max-height: calc(100vh - 120px);
+                overflow-y: auto;
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+                transform: none !important;
+                box-shadow: var(--shadow-xl);
             }
 
-            /* Custom modal mobile styles */
+            /* Add User Modal Mobile Optimizations */
+            #addUserModal .modal-content {
+                width: 95vw !important;
+                max-width: 400px !important;
+                padding: 20px 16px !important;
+            }
+
+            #addUserModal .modal h3 {
+                font-size: 20px !important;
+                text-align: center !important;
+                margin-bottom: 20px !important;
+            }
+
+            #addUserModal .modal label {
+                font-size: 14px !important;
+                margin-bottom: 12px !important;
+            }
+
+            #addUserModal .modal input,
+            #addUserModal .modal select {
+                padding: 14px 12px !important;
+                font-size: 16px !important; /* Prevents zoom on iOS */
+                border-radius: 8px !important;
+                margin-bottom: 8px !important;
+            }
+
+            #addUserModal .modal button {
+                padding: 14px 20px !important;
+                font-size: 16px !important;
+                border-radius: 8px !important;
+                margin: 8px 4px !important;
+                width: calc(50% - 8px) !important;
+            }
+
+            /* MTO Edit Modal Mobile Optimizations */
+            #mtoEditModal .modal-content {
+                width: 95vw !important;
+                max-width: 400px !important;
+                padding: 20px 16px !important;
+            }
+
+            #mtoEditModal .modal h3 {
+                font-size: 20px !important;
+                text-align: center !important;
+                margin-bottom: 20px !important;
+            }
+
+            #mtoEditModal .modal label {
+                font-size: 14px !important;
+                margin-bottom: 12px !important;
+            }
+
+            #mtoEditModal .modal input,
+            #mtoEditModal .modal select {
+                padding: 14px 12px !important;
+                font-size: 16px !important; /* Prevents zoom on iOS */
+                border-radius: 8px !important;
+                margin-bottom: 8px !important;
+            }
+
+            #mtoEditModal .modal button {
+                padding: 14px 20px !important;
+                font-size: 16px !important;
+                border-radius: 8px !important;
+                margin: 8px 4px !important;
+                width: calc(50% - 8px) !important;
+            }
+
+            /* Form Button Layout */
+            .modal .modal-content > div:last-child,
+            .modal .modal-buttons {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 8px !important;
+                justify-content: stretch !important;
+                margin-top: 24px !important;
+            }
+
+            .modal .modal-buttons button {
+                flex: 1 !important;
+                min-height: 48px !important;
+                font-size: 16px !important;
+                border-radius: 8px !important;
+                border: 2px solid var(--border-color) !important;
+                background: var(--white) !important;
+                color: var(--text-dark) !important;
+                font-weight: 600 !important;
+                transition: var(--transition) !important;
+                cursor: pointer !important;
+                touch-action: manipulation !important;
+            }
+
+            .modal .modal-buttons button[type="submit"],
+            .modal .modal-buttons button[onclick*="save"] {
+                background: var(--primary-color) !important;
+                color: white !important;
+                border-color: var(--primary-color) !important;
+            }
+
+            .modal .modal-buttons button:active {
+                transform: scale(0.98) !important;
+            }
+
+            /* Mobile Form Validation Styles */
+            .modal input:invalid {
+                border-color: var(--danger-color) !important;
+                box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2) !important;
+            }
+
+            .modal input:valid {
+                border-color: var(--success-color) !important;
+            }
+
+            /* Prevent modal close on backdrop click for mobile */
+            .modal {
+                pointer-events: auto !important;
+            }
+
+            .modal-content {
+                pointer-events: auto !important;
+            }
+
+            /* Improved touch target for mobile close buttons */
+            .modal .modal-content button,
+            .modal .modal-buttons button {
+                min-height: 48px !important;
+                min-width: 48px !important;
+            }
+
+            /* Mobile keyboard handling */
+            .modal input:focus,
+            .modal select:focus {
+                outline: 2px solid var(--primary-color) !important;
+                outline-offset: 2px !important;
+            }
+
+            /* Prevent horizontal scroll in modals */
+            .modal .modal-content {
+                overflow-x: hidden !important;
+            }
+
+            /* Custom Alert/Confirm Modal Mobile */
             #customAlertModal .modal-content,
             #customConfirmModal .modal-content {
                 width: 95vw !important;
@@ -1940,41 +2099,82 @@
                 <div class="modal-content">
                     <h3 id="modal-title">Add New User</h3>
                     <form id="addUserForm">
-                        <label>Homestay Name:<br><input type="text" id="inputHomestayName" required></label>
-                        <label>Owner's Name:<br><input type="text" id="inputOwnerName" required></label>
-                        <label>Address:<br><input type="text" id="inputAddress" required></label>
-                        <label>Username:<br><input type="text" id="inputUsername" required></label>
-                        <label>Password:<br><input type="password" id="inputPassword" required></label>
+                        <label>Homestay Name:<br>
+                            <input type="text" id="inputHomestayName" required 
+                                   autocomplete="organization" 
+                                   placeholder="Enter homestay name">
+                        </label>
+                        <label>Owner's Name:<br>
+                            <input type="text" id="inputOwnerName" required 
+                                   autocomplete="name" 
+                                   placeholder="Enter owner's full name">
+                        </label>
+                        <label>Address:<br>
+                            <input type="text" id="inputAddress" required 
+                                   autocomplete="address-line1" 
+                                   placeholder="Enter homestay address">
+                        </label>
+                        <label>Username:<br>
+                            <input type="text" id="inputUsername" required 
+                                   autocomplete="username" 
+                                   placeholder="Enter username">
+                        </label>
+                        <label>Password:<br>
+                            <input type="password" id="inputPassword" required 
+                                   autocomplete="new-password" 
+                                   placeholder="Enter password">
+                        </label>
                         <label>Status:<br>
                             <select id="inputStatus" required>
                                 <option value="Active" selected>Active</option>
                                 <option value="Inactive">Inactive</option>
                             </select>
                         </label>
-                        <div style="margin-top: 20px;">
-                            <button type="submit" id="submit-btn">Add User</button>
-                            <button type="button" onclick="closeAddUserModal()">Cancel</button>
+                        <div class="modal-buttons" style="margin-top: 20px; display: flex; gap: 8px; justify-content: stretch;">
+                            <button type="submit" id="submit-btn" style="flex: 1;">Add User</button>
+                            <button type="button" onclick="closeAddUserModal()" style="flex: 1;">Cancel</button>
                         </div>
                     </form>
                 </div>
             </div>
             <!-- MTO Edit Modal (for staff/admin accounts) -->
             <div id="mtoEditModal" class="modal">
-                <div class="modal-content" style="width:420px;">
+                <div class="modal-content">
                     <h3 id="mto-modal-title">Edit MTO Account</h3>
                     <form id="mtoEditForm">
-                        <label>Username:<br><input type="text" id="mto-input-username" readonly></label>
-                        <label>Name:<br><input type="text" id="mto-input-name" required></label>
-                        <label>Password:<br><input type="password" id="mto-input-password" placeholder="Leave blank to keep current"></label>
+                        <label>Username:<br>
+                            <input type="text" id="mto-input-username" readonly 
+                                   autocomplete="username" 
+                                   style="background-color: #f5f5f5; color: #666;">
+                        </label>
+                        <label>Name:<br>
+                            <input type="text" id="mto-input-name" required 
+                                   autocomplete="name" 
+                                   placeholder="Enter full name"
+                                   maxlength="255"
+                                   pattern="[A-Za-z\s]+"
+                                   title="Please enter a valid name (letters and spaces only)">
+                        </label>
+                        <label>Password:<br>
+                            <input type="password" id="mto-input-password" 
+                                   autocomplete="new-password" 
+                                   placeholder="Leave blank to keep current password">
+                        </label>
                         <label>Status:<br>
                             <select id="mto-input-status">
                                 <option value="Active">Active</option>
                                 <option value="Inactive">Inactive</option>
                             </select>
                         </label>
-                        <div style="margin-top:20px; display:flex; gap:8px; justify-content:flex-end;">
-                            <button type="button" onclick="saveMTOAccount()" style="background:var(--primary-color); color:#fff;">Save</button>
-                            <button type="button" onclick="closeMTOEditModal()">Cancel</button>
+                        <div class="modal-buttons" style="margin-top:20px; display:flex; gap:8px; justify-content:stretch;">
+                            <button type="button" onclick="saveMTOAccount()" 
+                                    style="background:var(--primary-color); color:#fff; flex: 1; border: none; padding: 14px; border-radius: 8px;">
+                                Save Changes
+                            </button>
+                            <button type="button" onclick="closeMTOEditModal()" 
+                                    style="flex: 1; padding: 14px; border-radius: 8px;">
+                                Cancel
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -2047,16 +2247,33 @@
 
             titleElement.textContent = title;
             messageElement.textContent = message;
+            
+            // Mobile optimizations
+            if (window.innerWidth <= 576) {
+                document.body.style.overflow = 'hidden';
+                closeMobileMenu();
+            }
+            
             modal.style.display = 'flex';
         }
 
         function closeCustomAlert() {
             document.getElementById('customAlertModal').style.display = 'none';
+            // Restore body scroll on mobile
+            if (window.innerWidth <= 576) {
+                document.body.style.overflow = '';
+            }
         }
 
         function showCustomConfirm(message, callback) {
             const modal = document.getElementById('customConfirmModal');
             const messageElement = document.getElementById('confirm-message');
+            
+            // Mobile optimizations
+            if (window.innerWidth <= 576) {
+                document.body.style.overflow = 'hidden';
+                closeMobileMenu();
+            }
             
             messageElement.textContent = message;
             confirmCallback = callback;
@@ -2068,6 +2285,10 @@
             if (confirmCallback) {
                 confirmCallback(result);
                 confirmCallback = null;
+            }
+            // Restore body scroll on mobile
+            if (window.innerWidth <= 576) {
+                document.body.style.overflow = '';
             }
         }
 
@@ -2284,15 +2505,20 @@
             let username, name, statusText;
             
             if (row) {
-                // Desktop table
+                // Desktop table - MTO accounts table structure:
+                // Index(0), Username(1), Name(2), Password(3), Role(4), Status(5), Actions(6)
                 username = row.cells[1].textContent.trim();
                 name = row.cells[2].textContent.trim();
-                statusText = row.cells[5].textContent.trim();
+                statusText = row.cells[5].querySelector('.status-badge').textContent.trim();
                 currentEditingRow = row;
             } else if (card) {
-                // Mobile card
+                // Mobile card - MTO structure:
+                // user-card-title = username, first user-card-field = name
                 username = card.querySelector('.user-card-title').textContent.trim();
-                name = card.querySelector('.user-card-field').nextElementSibling.textContent.trim();
+                // Get the name from the first user-card-field (remove the "Name" label)
+                const nameField = card.querySelector('.user-card-field');
+                const nameText = nameField ? nameField.textContent.trim() : '';
+                name = nameText.replace(/^Name\s*/, '').trim(); // Remove "Name" label
                 statusText = card.querySelector('.status-badge').textContent.trim();
                 currentEditingRow = card;
             } else {
@@ -2302,14 +2528,28 @@
             // Pre-fill MTO edit modal fields and open it
             document.getElementById('mto-input-username').value = username;
             document.getElementById('mto-input-name').value = name;
+            document.getElementById('mto-input-password').value = ''; // Always clear password field
             document.getElementById('mto-input-status').value = statusText;
-            // Save reference to row for UI update after save
-            currentEditingRow = row;
+            
             openMTOEditModal();
         }
 
         function openMTOEditModal() {
+            // Mobile optimizations
+            if (window.innerWidth <= 576) {
+                // Prevent body scroll when modal is open
+                document.body.style.overflow = 'hidden';
+                // Close mobile menu if open
+                closeMobileMenu();
+            }
+            
             document.getElementById('mtoEditModal').style.display = 'flex';
+            
+            // Focus first editable input for better UX
+            setTimeout(() => {
+                const firstInput = document.getElementById('mto-input-name');
+                if (firstInput) firstInput.focus();
+            }, 100);
         }
 
         function closeMTOEditModal() {
@@ -2320,6 +2560,11 @@
             document.getElementById('mto-input-password').value = '';
             document.getElementById('mto-input-status').value = 'Active';
             currentEditingRow = null;
+            
+            // Restore body scroll on mobile
+            if (window.innerWidth <= 576) {
+                document.body.style.overflow = '';
+            }
         }
 
         function saveMTOAccount() {
@@ -2327,7 +2572,13 @@
             const name = document.getElementById('mto-input-name').value.trim();
             const password = document.getElementById('mto-input-password').value;
             const status = document.getElementById('mto-input-status').value;
+            
+            // Validation
             if (!username) return customAlert('Missing username');
+            if (!name) return customAlert('Missing name');
+            if (name.length < 2) return customAlert('Name must be at least 2 characters long');
+            if (name.length > 255) return customAlert('Name is too long');
+            
             const csrftoken = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '';
             const payload = { username: username, name: name, status: status };
             if (password && password.trim() !== '') payload.password = password;
@@ -2645,13 +2896,33 @@
                 submitBtn.textContent = 'Add User';
                 document.getElementById('addUserForm').reset();
             }
+            
+            // Mobile optimizations
+            if (window.innerWidth <= 576) {
+                // Prevent body scroll when modal is open
+                document.body.style.overflow = 'hidden';
+                // Close mobile menu if open
+                closeMobileMenu();
+            }
+            
             modal.style.display = 'flex';
+            
+            // Focus first input for better UX
+            setTimeout(() => {
+                const firstInput = modal.querySelector('input:not([readonly])');
+                if (firstInput) firstInput.focus();
+            }, 100);
         }
 
         function closeAddUserModal() {
             document.getElementById('addUserModal').style.display = 'none';
             currentEditingRow = null;
             document.getElementById('addUserForm').reset();
+            
+            // Restore body scroll on mobile
+            if (window.innerWidth <= 576) {
+                document.body.style.overflow = '';
+            }
         }
 
         function saveUser() {
