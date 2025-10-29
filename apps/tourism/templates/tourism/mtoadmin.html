@@ -555,6 +555,22 @@
             margin: 0;
         }
         
+        .list-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+        
+        .list-subtitle i {
+            font-size: 12px;
+            color: var(--primary-color);
+        }
+        
         .search-container {
             display: flex;
             align-items: center;
@@ -759,6 +775,58 @@
             justify-content: center;
             color: #6c757d;
             border-radius: 5px;
+        }
+        
+        /* Chart interpretation styles */
+        .chart-interpretation {
+            margin-top: 20px;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e8f4fd 100%);
+            border-left: 4px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-dark);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .chart-interpretation .interpretation-title {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .chart-interpretation .interpretation-title i {
+            font-size: 16px;
+        }
+        
+        .chart-interpretation .interpretation-text {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .chart-interpretation .highlight {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .chart-interpretation .trend-up {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+        
+        .chart-interpretation .trend-down {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+        
+        .chart-interpretation .trend-stable {
+            color: var(--secondary-color);
+            font-weight: 600;
         }
         
         /* Tourist Management styles */
@@ -2266,7 +2334,13 @@
                     <!-- Homestay List Table (Restored Original) -->
                     <div class="homestay-list-container">
                         <div class="list-header">
-                            <h3>Homestay List</h3>
+                            <div>
+                                <h3>Homestay List</h3>
+                                <p class="list-subtitle">
+                                    <i class="fas fa-sort-amount-down"></i>
+                                    Sorted by most visited (highest tourist count)
+                                </p>
+                            </div>
                             <div class="search-container">
                                 <input type="text" id="homestay-search" placeholder="Search homestays..." />
                                 <button onclick="searchHomestays()"><i class="fas fa-search"></i></button>
@@ -2305,6 +2379,15 @@
                             </div>
                             <h4>Trends of Tourist per Month</h4>
                             <canvas id="tourist-monthly-chart"></canvas>
+                            <div id="monthly-interpretation" class="chart-interpretation" style="display: none;">
+                                <div class="interpretation-title">
+                                    <i class="fas fa-chart-line"></i>
+                                    Monthly Trend Analysis
+                                </div>
+                                <div class="interpretation-text" id="monthly-interpretation-text">
+                                    Loading interpretation...
+                                </div>
+                            </div>
                         </div>
                         <div class="chart-card">
                             <div class="chart-header">
@@ -2315,6 +2398,15 @@
                             </div>
                             <h4>Trends of Tourist per Year</h4>
                             <canvas id="tourist-yearly-chart"></canvas>
+                            <div id="yearly-interpretation" class="chart-interpretation" style="display: none;">
+                                <div class="interpretation-title">
+                                    <i class="fas fa-chart-area"></i>
+                                    Yearly Trend Analysis
+                                </div>
+                                <div class="interpretation-text" id="yearly-interpretation-text">
+                                    Loading interpretation...
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2931,6 +3023,14 @@
             } catch (err) {
                 homestayData = [];
             }
+            
+            // Sort homestay data by totalGuests in descending order (most tourists first)
+            homestayData.sort((a, b) => {
+                const countA = a.totalGuests || 0;
+                const countB = b.totalGuests || 0;
+                return countB - countA; // Descending order
+            });
+            
             // Update registered homestay count in dashboard
             const homestayCountDiv = document.getElementById('homestay-count');
             if (homestayCountDiv) {
@@ -3266,6 +3366,14 @@
             tbody.appendChild(tr);
             return;
         }
+        
+        // Sort homestays by tourist count in descending order (most tourists first)
+        homestayNames.sort((a, b) => {
+            const countA = homestayMap[a].count;
+            const countB = homestayMap[b].count;
+            return countB - countA; // Descending order
+        });
+        
         homestayNames.forEach(name => {
             const info = homestayMap[name];
             const tr = document.createElement('tr');
@@ -3554,6 +3662,11 @@
             },
             plugins: [window.ChartDataLabels]
         });
+        
+        // Generate interpretations for the charts
+        generateMonthlyInterpretation(monthlyData, monthlyLabels, year);
+        generateYearlyInterpretation(yearlyData, yearlyLabels);
+        
         // Load Chart.js datalabels plugin if not already loaded
         if (!window.ChartDataLabels) {
             var script = document.createElement('script');
@@ -3563,6 +3676,145 @@
             };
             document.head.appendChild(script);
         }
+    }
+
+    // Generate monthly trend interpretation
+    function generateMonthlyInterpretation(monthlyData, monthlyLabels, year) {
+        const interpretationDiv = document.getElementById('monthly-interpretation');
+        const interpretationText = document.getElementById('monthly-interpretation-text');
+        
+        if (!monthlyData || monthlyData.length === 0 || monthlyData.every(val => val === 0)) {
+            interpretationDiv.style.display = 'none';
+            return;
+        }
+        
+        const total = monthlyData.reduce((sum, val) => sum + val, 0);
+        const average = total / 12;
+        const max = Math.max(...monthlyData);
+        const min = Math.min(...monthlyData);
+        const maxMonth = monthlyLabels[monthlyData.indexOf(max)];
+        const minMonth = monthlyLabels[monthlyData.indexOf(min)];
+        
+        // Calculate trend (compare first half vs second half of year)
+        const firstHalf = monthlyData.slice(0, 6).reduce((sum, val) => sum + val, 0);
+        const secondHalf = monthlyData.slice(6, 12).reduce((sum, val) => sum + val, 0);
+        const trendDirection = secondHalf > firstHalf ? 'increasing' : secondHalf < firstHalf ? 'decreasing' : 'stable';
+        const trendClass = secondHalf > firstHalf ? 'trend-up' : secondHalf < firstHalf ? 'trend-down' : 'trend-stable';
+        
+        // Identify peak season
+        const peakMonths = [];
+        monthlyData.forEach((val, idx) => {
+            if (val >= average * 1.2) {
+                peakMonths.push(monthlyLabels[idx]);
+            }
+        });
+        
+        let interpretation = `In <span class="highlight">${year}</span>, tourism showed a total of <span class="highlight">${total}</span> visitors with an average of <span class="highlight">${Math.round(average)}</span> visitors per month. `;
+        
+        interpretation += `The busiest month was <span class="highlight">${maxMonth}</span> with <span class="highlight">${max}</span> visitors, while <span class="highlight">${minMonth}</span> had the lowest with <span class="highlight">${min}</span> visitors. `;
+        
+        if (peakMonths.length > 0) {
+            interpretation += `Peak tourism months include <span class="highlight">${peakMonths.join(', ')}</span>. `;
+        }
+        
+        interpretation += `Overall, the year shows a <span class="${trendClass}">${trendDirection}</span> trend from the first half to the second half of the year.`;
+        
+        // Add seasonal insights
+        const summer = monthlyData.slice(5, 8).reduce((sum, val) => sum + val, 0); // Jun-Aug
+        const winter = [monthlyData[11], monthlyData[0], monthlyData[1]].reduce((sum, val) => sum + val, 0); // Dec-Feb
+        
+        if (summer > winter * 1.5) {
+            interpretation += ` <span class="highlight">Summer season</span> shows significantly higher tourist activity than winter months.`;
+        } else if (winter > summer * 1.2) {
+            interpretation += ` Interestingly, <span class="highlight">winter months</span> show strong tourist activity, possibly indicating year-round appeal.`;
+        }
+        
+        interpretationText.innerHTML = interpretation;
+        interpretationDiv.style.display = 'block';
+    }
+    
+    // Generate yearly trend interpretation
+    function generateYearlyInterpretation(yearlyData, yearlyLabels) {
+        const interpretationDiv = document.getElementById('yearly-interpretation');
+        const interpretationText = document.getElementById('yearly-interpretation-text');
+        
+        if (!yearlyData || yearlyData.length === 0 || yearlyData.every(val => val === 0)) {
+            interpretationDiv.style.display = 'none';
+            return;
+        }
+        
+        const total = yearlyData.reduce((sum, val) => sum + val, 0);
+        const average = total / yearlyData.length;
+        const max = Math.max(...yearlyData);
+        const min = Math.min(...yearlyData);
+        const maxYear = yearlyLabels[yearlyData.indexOf(max)];
+        const minYear = yearlyLabels[yearlyData.indexOf(min)];
+        
+        // Calculate growth trend
+        let growthTrend = 'stable';
+        let trendClass = 'trend-stable';
+        let growthRate = 0;
+        
+        if (yearlyData.length >= 2) {
+            const firstYear = yearlyData[0];
+            const lastYear = yearlyData[yearlyData.length - 1];
+            growthRate = ((lastYear - firstYear) / firstYear * 100);
+            
+            if (growthRate > 10) {
+                growthTrend = 'strong growth';
+                trendClass = 'trend-up';
+            } else if (growthRate > 0) {
+                growthTrend = 'moderate growth';
+                trendClass = 'trend-up';
+            } else if (growthRate < -10) {
+                growthTrend = 'significant decline';
+                trendClass = 'trend-down';
+            } else if (growthRate < 0) {
+                growthTrend = 'slight decline';
+                trendClass = 'trend-down';
+            }
+        }
+        
+        // Calculate year-over-year changes
+        const yearChanges = [];
+        for (let i = 1; i < yearlyData.length; i++) {
+            const change = ((yearlyData[i] - yearlyData[i-1]) / yearlyData[i-1] * 100);
+            yearChanges.push(change);
+        }
+        
+        let interpretation = `Over the ${yearlyData.length}-year period (${yearlyLabels[0]}-${yearlyLabels[yearlyLabels.length-1]}), tourism shows `;
+        interpretation += `<span class="${trendClass}">${growthTrend}</span> with a total of <span class="highlight">${total}</span> visitors `;
+        interpretation += `and an average of <span class="highlight">${Math.round(average)}</span> visitors per year. `;
+        
+        interpretation += `The peak year was <span class="highlight">${maxYear}</span> with <span class="highlight">${max}</span> visitors, `;
+        interpretation += `while <span class="highlight">${minYear}</span> recorded the lowest with <span class="highlight">${min}</span> visitors. `;
+        
+        if (Math.abs(growthRate) > 1) {
+            interpretation += `The overall growth rate from ${yearlyLabels[0]} to ${yearlyLabels[yearlyLabels.length-1]} is <span class="${trendClass}">${growthRate.toFixed(1)}%</span>. `;
+        }
+        
+        // Identify consistent growth or decline patterns
+        const positiveChanges = yearChanges.filter(change => change > 5).length;
+        const negativeChanges = yearChanges.filter(change => change < -5).length;
+        
+        if (positiveChanges >= yearChanges.length * 0.7) {
+            interpretation += `The data shows <span class="trend-up">consistent upward momentum</span> throughout most years.`;
+        } else if (negativeChanges >= yearChanges.length * 0.7) {
+            interpretation += `The trend indicates <span class="trend-down">sustained challenges</span> in tourism growth.`;
+        } else {
+            interpretation += `Tourism shows <span class="trend-stable">mixed patterns</span> with both growth and decline periods.`;
+        }
+        
+        // Add volatility insight
+        const volatility = yearChanges.reduce((sum, change) => sum + Math.abs(change), 0) / yearChanges.length;
+        if (volatility > 20) {
+            interpretation += ` The high year-to-year variability suggests <span class="highlight">external factors</span> significantly impact tourism.`;
+        } else if (volatility < 5) {
+            interpretation += ` The low variability indicates <span class="highlight">stable tourism patterns</span> with predictable trends.`;
+        }
+        
+        interpretationText.innerHTML = interpretation;
+        interpretationDiv.style.display = 'block';
     }
 
     // Mobile menu functionality
