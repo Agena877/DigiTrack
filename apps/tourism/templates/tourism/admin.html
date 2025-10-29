@@ -1231,7 +1231,19 @@
             
             .content-area {
                 margin-top: 70px;
-                padding: 12px;
+                padding: 12px 8px;
+            }
+
+            /* User Management Page specific mobile styles */
+            #user-management-page {
+                padding: 0;
+            }
+
+            #user-management-page .user-management-container {
+                margin: 0;
+                border-radius: 0;
+                box-shadow: none;
+                background: transparent;
             }
 
             .dashboard-container {
@@ -1263,8 +1275,12 @@
             }
 
             .user-management-container {
-                padding: 16px;
-                margin: 0 -4px;
+                padding: 16px 12px;
+                margin: 0;
+                border-radius: var(--border-radius);
+                background: var(--white);
+                box-shadow: var(--shadow-sm);
+                overflow-x: hidden;
             }
 
             .user-management-header {
@@ -1276,6 +1292,7 @@
             .user-management-header h2 {
                 font-size: 22px;
                 text-align: center;
+                margin: 0 0 16px 0;
             }
 
             .user-management-buttons {
@@ -1287,28 +1304,57 @@
                 justify-content: center;
                 min-height: 48px;
                 font-size: 16px;
+                width: 100%;
             }
 
             .user-tabs {
                 flex-wrap: wrap;
                 gap: 4px;
+                margin-bottom: 8px !important;
+                border-bottom: 1px solid var(--border-color);
+                padding-bottom: 0;
             }
 
             .user-tabs button {
                 flex: 1;
-                min-width: auto;
-                padding: 14px 12px;
-                font-size: 14px;
+                min-width: 0;
+                padding: 12px 8px;
+                font-size: 12px;
                 text-align: center;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             /* Mobile table - card layout */
             .user-table {
-                display: none;
+                display: none !important;
+            }
+
+            .table-container {
+                min-height: 0 !important;
+                height: auto !important;
             }
 
             .mobile-user-cards {
-                display: block;
+                display: block !important;
+                margin-top: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* Tab content mobile styling */
+            .tab-content {
+                padding: 0 !important;
+                margin-top: 0 !important;
+            }
+
+            .tab-content .table-container {
+                overflow-x: auto;
+                border-radius: var(--border-radius);
+                box-shadow: var(--shadow-sm);
+                margin: 0 !important;
+                padding: 0 !important;
+                min-height: 0 !important;
             }
 
             .user-card {
@@ -1316,9 +1362,13 @@
                 border: 1px solid var(--border-color);
                 border-radius: var(--border-radius);
                 padding: 16px;
-                margin-bottom: 12px;
+                margin: 0 0 12px 0;
                 box-shadow: var(--shadow-sm);
                 transition: var(--transition);
+            }
+
+            .user-card:first-child {
+                margin-top: 0 !important;
             }
 
             .user-card:hover {
@@ -1703,83 +1753,86 @@
                         </div>
                     </div>
                     <div class="user-tabs" style="display: flex; align-items: center;">
-    <button class="active-tab" data-tab="users" style="border-bottom-color: #0077B6;">Users</button>
-    <button data-tab="manage" id="manage-account-btn" style="margin-left:0; border:none; background:none; padding:10px 20px; font-size:16px; cursor:pointer; border-bottom:2px solid transparent; color:#333; transition:all 0.3s;">
-        Manage User Accounts
-    </button>
-    <button data-tab="archive">Archive</button>
-</div>
-<!-- Users Tab Content -->
-<div id="users-tab" class="tab-content active">
-    <div class="table-container">
-        <table class="user-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Homestay Name</th>
-                    <th>Owner's Name</th>
-                    <th>Address</th>
-                    <th>Username</th>
-                    <th>Password</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="user-table-body">
-                <!-- User rows should be rendered dynamically from context, not hardcoded -->
-            </tbody>
-        </table>
-    </div>
-    
-    <!-- Mobile Card Layout (hidden on desktop) -->
-    <div class="mobile-user-cards" id="mobile-user-cards" style="display: none;">
-        <!-- Mobile cards will be populated by JavaScript -->
-    </div>
-</div>
-<!-- Manage User Accounts Tab Content -->
-<div id="manage-tab" class="tab-content">
-    <table class="user-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Homestay Name</th>
-                <th>Owner's Name</th>
-                <th>Address</th>
-                <th>Username</th>
-                <th>Password</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="manage-table-body">
-            <!-- Will be filled by JS, same as users -->
-        </tbody>
-    </table>
+                        <button class="active-tab" data-tab="users" style="border-bottom-color: #0077B6;">Users</button>
+                        <button data-tab="manage" id="manage-account-btn" style="margin-left:0; border:none; background:none; padding:10px 20px; font-size:16px; cursor:pointer; border-bottom:2px solid transparent; color:#333; transition:all 0.3s;">
+                            Manage User Accounts
+                        </button>
+                        <button data-tab="archive">Archive</button>
+                    </div>
+                    
+                    <!-- Users Tab Content -->
+                    <div id="users-tab" class="tab-content active">
+                        <div class="table-container">
+                            <table class="user-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Homestay Name</th>
+                                        <th>Owner's Name</th>
+                                        <th>Address</th>
+                                        <th>Username</th>
+                                        <th>Password</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="user-table-body">
+                                    <!-- User rows should be rendered dynamically from context, not hardcoded -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Mobile Card Layout (hidden on desktop) -->
+                        <div class="mobile-user-cards" id="mobile-user-cards" style="display: none;">
+                            <!-- Mobile cards will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Manage User Accounts Tab Content -->
+                    <div id="manage-tab" class="tab-content">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Homestay Name</th>
+                                    <th>Owner's Name</th>
+                                    <th>Address</th>
+                                    <th>Username</th>
+                                    <th>Password</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="manage-table-body">
+                                <!-- Will be filled by JS, same as users -->
+                            </tbody>
+                        </table>
 
-    <!-- MTO Staff & Admin Accounts -->
-    <h3 style="margin-top:24px; margin-bottom:12px;">MTO Staff & Admin Accounts</h3>
-    <div class="table-container">
-        <table class="user-table" id="mto-accounts-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Username</th>
-                    <th>Name</th>
-                    <th>Password</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="mto-accounts-body">
-                <!-- Filled by JS -->
-            </tbody>
-        </table>
-    </div>
-</div>
-<!-- Archive Tab Content -->
-<div id="archive-tab" class="tab-content">
-    <table class="user-table">
+                        <!-- MTO Staff & Admin Accounts -->
+                        <h3 style="margin-top:24px; margin-bottom:12px;">MTO Staff & Admin Accounts</h3>
+                        <div class="table-container">
+                            <table class="user-table" id="mto-accounts-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Username</th>
+                                        <th>Name</th>
+                                        <th>Password</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mto-accounts-body">
+                                    <!-- Filled by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Archive Tab Content -->
+                    <div id="archive-tab" class="tab-content">
+                        <table class="user-table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -1796,7 +1849,9 @@
                                 <!-- Archived users will appear here -->
                             </tbody>
                         </table>
-</div>
+                    </div>
+                </div>
+            </div>
                 </div>
             </div>
             <!-- Add/Edit User Modal -->
@@ -1942,6 +1997,9 @@
                 if (result.success && Array.isArray(result.mto_accounts)) {
                     renderMTOAccounts(result.mto_accounts);
                 }
+                
+                // Ensure mobile layout is properly handled after data is loaded
+                handleResponsiveLayout();
             } catch (err) {
                 console.error('Error fetching users:', err);
                 const tbody = document.getElementById('user-table-body');
@@ -2106,7 +2164,7 @@
             .catch(() => alert('Error updating account'));
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             // Always show dashboard on login
             document.getElementById('dashboard-page').style.display = 'block';
             var userMgmt = document.getElementById('user-management-page');
@@ -2114,8 +2172,10 @@
             initializeNavigation();
             initializeUserManagement();
             initializeMobileMenu();
-            fetchAndRenderHomestayUsers();
             updateDashboardStats();
+            
+            // Fetch users first, then handle responsive layout
+            await fetchAndRenderHomestayUsers();
             handleResponsiveLayout();
             
             // Handle window resize
@@ -2832,35 +2892,45 @@
             mobileCards.innerHTML = '';
             
             const rows = userTableBody.querySelectorAll('tr');
+            let validCardCount = 0;
+            
             rows.forEach((row, index) => {
                 const cells = row.cells;
-                if (cells.length === 0) return;
+                
+                // Skip rows with no cells or insufficient cells
+                if (!cells || cells.length < 7) return;
+                
+                const homestayName = cells[1]?.textContent?.trim() || '';
+                const ownerName = cells[2]?.textContent?.trim() || '';
+                const address = cells[3]?.textContent?.trim() || '';
+                const username = cells[4]?.textContent?.trim() || '';
+                const status = cells[6]?.innerHTML || '';
+                
+                // Skip rows that don't have essential data (at least homestay name and username)
+                if (!homestayName && !username) return;
+                
+                // Skip empty or placeholder rows
+                if (homestayName === '' && ownerName === '' && address === '' && username === '') return;
                 
                 const card = document.createElement('div');
                 card.className = 'user-card';
                 
-                const homestayName = cells[1]?.textContent || '';
-                const ownerName = cells[2]?.textContent || '';
-                const address = cells[3]?.textContent || '';
-                const username = cells[4]?.textContent || '';
-                const status = cells[6]?.innerHTML || '';
-                
                 card.innerHTML = `
                     <div class="user-card-header">
                         <div>
-                            <div class="user-card-title">${homestayName}</div>
-                            <div class="user-card-subtitle">${ownerName}</div>
+                            <div class="user-card-title">${homestayName || 'N/A'}</div>
+                            <div class="user-card-subtitle">${ownerName || 'N/A'}</div>
                         </div>
                         <div>${status}</div>
                     </div>
                     <div class="user-card-info">
                         <div class="user-card-field">
                             <strong>Address</strong>
-                            ${address}
+                            ${address || 'N/A'}
                         </div>
                         <div class="user-card-field">
                             <strong>Username</strong>
-                            ${username}
+                            ${username || 'N/A'}
                         </div>
                     </div>
                     <div class="user-card-actions">
@@ -2872,10 +2942,11 @@
                 `;
                 
                 mobileCards.appendChild(card);
+                validCardCount++;
             });
             
-            // Show empty state if no cards
-            if (rows.length === 0) {
+            // Show empty state if no valid cards were created
+            if (validCardCount === 0) {
                 mobileCards.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: var(--text-muted);">
                         <i class="fas fa-users" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
