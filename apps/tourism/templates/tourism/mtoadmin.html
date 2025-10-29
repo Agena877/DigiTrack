@@ -1943,8 +1943,10 @@
                             <tr>
                                 <th>Guest Name</th>
                                 <th>Contact Number</th>
+                                <th>Address</th>
                                 <th>Homestay</th>
-                                <th>Booking Date</th>
+                                <th>Date of Arrival</th>
+                                <th>Date of Departure</th>
                                 <th>No. of Guests</th>
                                 <th>Status</th>
                             </tr>
@@ -2052,7 +2054,7 @@
     async function loadTouristTableAndDashboard() {
         const tbody = document.getElementById('tourist-table-body');
         const touristCountDiv = document.getElementById('tourist-count');
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">Loading...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;">Loading...</td></tr>';
         try {
             const resp = await fetch('/api/tourist-list/');
             const data = await resp.json();
@@ -2067,7 +2069,7 @@
             if (touristCountDiv) touristCountDiv.textContent = totalGuests;
             // Table
             if (!Array.isArray(data) || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">No tourists found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;">No tourists found.</td></tr>';
                 return;
             }
             tbody.innerHTML = '';
@@ -2076,8 +2078,10 @@
                 tr.innerHTML = `
                     <td>${t.guest_name || '-'}</td>
                     <td>${t.contact_number || '-'}</td>
+                    <td>${t.address || '-'}</td>
                     <td>${t.homestay__name || '-'}</td>
-                    <td>${t.date || '-'}</td>
+                    <td>${t.date_arrival || t.date || '-'}</td>
+                    <td>${t.date_departure || '-'}</td>
                     <td>${t.num_people || '-'}</td>
                     <td>
                         ${t.status === 'reserved' ? '<span class="status-badge status-reserved">Reserved</span>' :
@@ -2088,7 +2092,7 @@
                 tbody.appendChild(tr);
             });
         } catch (err) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Error loading data.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error loading data.</td></tr>';
             if (touristCountDiv) touristCountDiv.textContent = '-';
         }
     }
@@ -2679,12 +2683,12 @@
         function searchTourists() {
             const q = document.getElementById('tourist-search').value.trim();
             const tbody = document.getElementById('tourist-table-body');
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">Searching...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;">Searching...</td></tr>';
             fetch(`/api/tourist-search/?q=${encodeURIComponent(q)}`)
                 .then(r => r.json())
                 .then(data => {
                     if (!Array.isArray(data) || data.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">No tourists found.</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;">No tourists found.</td></tr>';
                         return;
                     }
                     tbody.innerHTML = '';
@@ -2693,8 +2697,10 @@
                         tr.innerHTML = `
                             <td>${t.guest_name || '-'}</td>
                             <td>${t.contact_number || '-'}</td>
+                            <td>${t.address || '-'}</td>
                             <td>${t.homestay__name || '-'}</td>
-                            <td>${t.date || '-'}</td>
+                            <td>${t.date_arrival || t.date || '-'}</td>
+                            <td>${t.date_departure || '-'}</td>
                             <td>${t.num_people || '-'}</td>
                             <td>${t.status === 'reserved' ? '<span class="status-badge status-reserved">Reserved</span>' : t.status === 'available' ? '<span class="status-badge status-available">Available</span>' : `<span class="status-badge status-archived">${t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : '-'}</span>`}</td>
                         `;
@@ -2702,7 +2708,7 @@
                     });
                 })
                 .catch(err => {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Error searching tourists.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error searching tourists.</td></tr>';
                 });
         }
 
@@ -2823,15 +2829,16 @@
             tbody.innerHTML = '';
             if (tourists.length === 0) {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td colspan="7" style="text-align:center;color:#888;">No tourists found.</td>`;
+                tr.innerHTML = `<td colspan="8" style="text-align:center;color:#888;">No tourists found.</td>`;
                 tbody.appendChild(tr);
                 return;
             }
             tourists.forEach(tourist => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${tourist.id}</td>
                     <td>${tourist.name}</td>
+                    <td>${tourist.contactNumber}</td>
+                    <td>${tourist.address || '-'}</td>
                     <td>${tourist.homestayName}</td>
                     <td>${tourist.dateArrival}</td>
                     <td>${tourist.dateDeparture}</td>

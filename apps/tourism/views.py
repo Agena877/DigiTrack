@@ -534,13 +534,15 @@ def api_tourist_list(request):
     from .models import Booking
     # Only include tourists that were created through the registration flow (exclude calendar reservations)
     bookings = Booking.objects.filter(num_people__gt=0, source='registration').order_by('-created_at').values(
-        'guest_name', 'contact_number', 'homestay__name', 'date', 'num_people', 'status'
+        'guest_name', 'contact_number', 'address', 'homestay__name', 'date', 'date_arrival', 'date_departure', 'num_people', 'status'
     )
     # Convert date to string
     data = []
     for b in bookings:
         d = dict(b)
         d['date'] = d['date'].isoformat() if d['date'] else ''
+        d['date_arrival'] = d['date_arrival'].isoformat() if d['date_arrival'] else ''
+        d['date_departure'] = d['date_departure'].isoformat() if d['date_departure'] else ''
         data.append(d)
     # DEBUG: print to server log
     print('API /api/tourist-list/ returns:', data)
@@ -573,28 +575,27 @@ def api_tourist_search(request):
         bookings = bookings.filter(
             Q(guest_name__icontains=q) | Q(contact_number__icontains=q) | Q(homestay__name__icontains=q)
         )
-    bookings = bookings.values('guest_name', 'contact_number', 'homestay__name', 'date', 'num_people', 'status')
+    bookings = bookings.values('guest_name', 'contact_number', 'homestay__name', 'date', 'date_arrival', 'date_departure', 'num_people', 'status')
     data = []
     for b in bookings:
         d = dict(b)
         d['date'] = d['date'].isoformat() if d['date'] else ''
+        d['date_arrival'] = d['date_arrival'].isoformat() if d['date_arrival'] else ''
+        d['date_departure'] = d['date_departure'].isoformat() if d['date_departure'] else ''
         data.append(d)
     return JsonResponse(data, safe=False)
 @csrf_exempt
 @require_POST
 def api_register_tourist(request):
     data = json.loads(request.body.decode('utf-8'))
-    required_fields = ['name', 'homestayName', 'contactNumber', 'region', 'province', 'city', 'barangay', 'dateArrival', 'dateDeparture', 'numTourist']
+    required_fields = ['name', 'homestayName', 'contactNumber', 'address', 'dateArrival', 'dateDeparture', 'numTourist']
     for field in required_fields:
         if not data.get(field):
             return JsonResponse({'success': False, 'error': f'Missing required field: {field}'}, status=400)
     name = data['name']
     homestay_name = data['homestayName']
     contact = data['contactNumber']
-    region = data['region']
-    province = data['province']
-    city = data['city']
-    barangay = data['barangay']
+    address = data['address']
     date_arrival = data['dateArrival']
     date_departure = data['dateDeparture']
     num_tourist = data['numTourist']
@@ -608,6 +609,7 @@ def api_register_tourist(request):
     from datetime import datetime
     try:
         booking_date = datetime.strptime(date_arrival, '%Y-%m-%d').date()
+        departure_date = datetime.strptime(date_departure, '%Y-%m-%d').date()
     except Exception:
         return JsonResponse({'success': False, 'error': 'Invalid date.'}, status=400)
     # Prevent duplicate: same homestay and date (matches DB unique constraint)
@@ -616,10 +618,13 @@ def api_register_tourist(request):
     Booking.objects.create(
         homestay=homestay,
         date=booking_date,
+        date_arrival=booking_date,
+        date_departure=departure_date,
         status='reserved',
         guest_name=name,
         num_people=num_tourist,
         contact_number=contact,
+        address=address,
         source='registration'
     )
     return JsonResponse({'success': True, 'message': 'Tourist registered successfully!'})
@@ -649,10 +654,7 @@ def tourist_registration(request):
         name = request.POST.get('name')
         homestay_name = request.POST.get('homestayName')
         contact = request.POST.get('contactNumber')
-        region = request.POST.get('region')
-        province = request.POST.get('province')
-        city = request.POST.get('city')
-        barangay = request.POST.get('barangay')
+        address = request.POST.get('address')
         date_arrival = request.POST.get('dateArrival')
         date_departure = request.POST.get('dateDeparture')
         num_tourist = request.POST.get('numTourist')
@@ -676,9 +678,13 @@ def tourist_registration(request):
             Booking.objects.create(
                 homestay=homestay,
                 date=day,
+                date_arrival=start_date,
+                date_departure=end_date,
                 status='reserved',
                 guest_name=name,
                 num_people=num_tourist,
+                contact_number=contact,
+                address=address,
                 source='registration'
             )
     messages.success(request, 'Tourist registered successfully!')

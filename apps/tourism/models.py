@@ -78,11 +78,14 @@ class Booking(models.Model):
     ]
     homestay = models.ForeignKey('Homestay', on_delete=models.CASCADE, related_name='bookings')
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='bookings', null=True, blank=True)
-    date = models.DateField()
+    date = models.DateField()  # Keep for backward compatibility
+    date_arrival = models.DateField(blank=True, null=True)  # New arrival date field
+    date_departure = models.DateField(blank=True, null=True)  # New departure date field
     status = models.CharField(max_length=20, choices=BOOKING_STATUS_CHOICES, default='available')
     guest_name = models.CharField(max_length=255, blank=True, null=True)
     num_people = models.IntegerField(blank=True, null=True)
     contact_number = models.CharField(max_length=20, blank=True, null=True)
+    address = models.CharField(max_length=500, blank=True, null=True)  # Guest address
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     source = models.CharField(max_length=20, choices=BOOKING_SOURCE_CHOICES, default='registration')
