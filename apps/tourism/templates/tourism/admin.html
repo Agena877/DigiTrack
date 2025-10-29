@@ -1308,22 +1308,42 @@
             }
 
             .user-tabs {
-                flex-wrap: wrap;
-                gap: 4px;
+                display: flex !important;
+                flex-wrap: nowrap;
+                gap: 0;
                 margin-bottom: 8px !important;
                 border-bottom: 1px solid var(--border-color);
                 padding-bottom: 0;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
             }
 
             .user-tabs button {
                 flex: 1;
-                min-width: 0;
-                padding: 12px 8px;
-                font-size: 12px;
+                min-width: 70px;
+                padding: 10px 8px;
+                font-size: 11px;
                 text-align: center;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
+                border: none !important;
+                background: transparent !important;
+                color: var(--text-muted) !important;
+                border-radius: 0 !important;
+                border-bottom: 3px solid transparent !important;
+                line-height: 1.2;
+            }
+
+            .user-tabs button.active-tab {
+                color: var(--primary-color) !important;
+                background: var(--primary-light) !important;
+                border-bottom-color: var(--primary-color) !important;
+            }
+
+            .user-tabs button:hover {
+                color: var(--primary-color) !important;
+                background: rgba(0, 119, 182, 0.05) !important;
             }
 
             /* Mobile table - card layout */
@@ -1360,11 +1380,11 @@
             .user-card {
                 background: var(--white);
                 border: 1px solid var(--border-color);
-                border-radius: var(--border-radius);
-                padding: 16px;
-                margin: 0 0 12px 0;
-                box-shadow: var(--shadow-sm);
-                transition: var(--transition);
+                border-radius: 8px;
+                padding: 14px;
+                margin: 0 0 10px 0;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                transition: all 0.3s ease;
             }
 
             .user-card:first-child {
@@ -1372,53 +1392,71 @@
             }
 
             .user-card:hover {
-                box-shadow: var(--shadow-md);
-                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                transform: translateY(-1px);
+                border-color: #0077B6;
             }
 
             .user-card-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: flex-start;
-                margin-bottom: 12px;
+                margin-bottom: 10px;
             }
 
             .user-card-title {
                 font-weight: 600;
-                font-size: 16px;
+                font-size: 15px;
                 color: var(--text-dark);
-                margin-bottom: 4px;
+                margin-bottom: 3px;
+                line-height: 1.3;
             }
 
             .user-card-subtitle {
-                font-size: 14px;
+                font-size: 12px;
                 color: var(--text-muted);
+                font-weight: 500;
             }
 
             .user-card-info {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                gap: 8px;
-                margin-bottom: 12px;
+                gap: 6px;
+                margin-bottom: 10px;
             }
 
             .user-card-field {
-                font-size: 13px;
+                font-size: 12px;
+                line-height: 1.4;
             }
 
             .user-card-field strong {
                 display: block;
                 color: var(--text-muted);
                 font-weight: 500;
-                margin-bottom: 2px;
+                margin-bottom: 1px;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
             }
 
             .user-card-actions {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding-top: 12px;
-                border-top: 1px solid var(--border-color);
+                padding-top: 10px;
+                border-top: 1px solid #e9ecef;
+                margin-top: auto;
+            }
+
+            .mobile-manage-cards {
+                padding: 0 16px;
+            }
+
+            .mobile-manage-cards .user-card {
+                margin-bottom: 12px;
+                border-radius: 10px;
+                box-shadow: 0 2px 6px rgba(0,119,182,0.1);
             }
 
             .modal-content {
@@ -1754,7 +1792,7 @@
                     </div>
                     <div class="user-tabs" style="display: flex; align-items: center;">
                         <button class="active-tab" data-tab="users" style="border-bottom-color: #0077B6;">Users</button>
-                        <button data-tab="manage" id="manage-account-btn" style="margin-left:0; border:none; background:none; padding:10px 20px; font-size:16px; cursor:pointer; border-bottom:2px solid transparent; color:#333; transition:all 0.3s;">
+                        <button data-tab="manage" id="manage-account-btn">
                             Manage User Accounts
                         </button>
                         <button data-tab="archive">Archive</button>
@@ -1790,23 +1828,30 @@
                     
                     <!-- Manage User Accounts Tab Content -->
                     <div id="manage-tab" class="tab-content">
-                        <table class="user-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Homestay Name</th>
-                                    <th>Owner's Name</th>
-                                    <th>Address</th>
-                                    <th>Username</th>
-                                    <th>Password</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="manage-table-body">
-                                <!-- Will be filled by JS, same as users -->
-                            </tbody>
-                        </table>
+                        <div class="table-container">
+                            <table class="user-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Homestay Name</th>
+                                        <th>Owner's Name</th>
+                                        <th>Address</th>
+                                        <th>Username</th>
+                                        <th>Password</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="manage-table-body">
+                                    <!-- Will be filled by JS, same as users -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Mobile Card Layout for Manage Tab -->
+                        <div class="mobile-user-cards" id="mobile-manage-cards" style="display: none;">
+                            <!-- Mobile cards will be populated by JavaScript -->
+                        </div>
 
                         <!-- MTO Staff & Admin Accounts -->
                         <h3 style="margin-top:24px; margin-bottom:12px;">MTO Staff & Admin Accounts</h3>
@@ -1827,6 +1872,9 @@
                                     <!-- Filled by JS -->
                                 </tbody>
                             </table>
+                            <div class="mobile-user-cards" id="mobile-mto-cards" style="display: none;">
+                                <!-- Mobile MTO cards will be rendered here -->
+                            </div>
                         </div>
                     </div>
                     
@@ -2013,15 +2061,25 @@
         // Render MTO staff/admin accounts into the manage tab
         function renderMTOAccounts(accounts) {
             const tbody = document.getElementById('mto-accounts-body');
+            const mobileMtoCards = document.getElementById('mobile-mto-cards');
+            
             if (!tbody) return;
             tbody.innerHTML = '';
+            if (mobileMtoCards) mobileMtoCards.innerHTML = '';
+            
             if (!Array.isArray(accounts) || accounts.length === 0) {
                 const emptyRow = document.createElement('tr');
                 emptyRow.innerHTML = `<td colspan="7" style="text-align:center; color:#888; font-style:italic;">No MTO staff or admin accounts found.</td>`;
                 tbody.appendChild(emptyRow);
+                
+                if (mobileMtoCards) {
+                    mobileMtoCards.innerHTML = `<div style="text-align:center; color:#888; font-style:italic; padding:20px;">No MTO staff or admin accounts found.</div>`;
+                }
                 return;
             }
+            
             accounts.forEach((a, idx) => {
+                // Desktop table row
                 const row = tbody.insertRow();
                 row.innerHTML = `
                     <td>${idx + 1}</td>
@@ -2035,21 +2093,73 @@
                         ${ (a.status||'').toLowerCase() === 'active' ? `<button class=\"suspend-btn\" onclick=\"toggleMTOActive(this, '${a.username}', false)\">Suspend</button>` : `<button class=\"unsuspend-btn\" onclick=\"toggleMTOActive(this, '${a.username}', true)\">Unsuspend</button>` }
                     </td>
                 `;
+                
+                // Mobile card
+                if (mobileMtoCards) {
+                    const statusClass = (a.status || 'Inactive').toLowerCase();
+                    const actionButton = (a.status || '').toLowerCase() === 'active' 
+                        ? `<button class="suspend-btn" style="background:#e67e22;color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:12px;" onclick="toggleMTOActive(this, '${a.username}', false)">Suspend</button>`
+                        : `<button class="unsuspend-btn" style="background:#0077B6;color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:12px;" onclick="toggleMTOActive(this, '${a.username}', true)">Unsuspend</button>`;
+                        
+                    const mobileCard = document.createElement('div');
+                    mobileCard.className = 'user-card';
+                    mobileCard.innerHTML = `
+                        <div class="user-card-header">
+                            <div>
+                                <div class="user-card-title">${a.username}</div>
+                                <div class="user-card-subtitle">${a.role}</div>
+                            </div>
+                            <span class="status-badge status-${statusClass}">${a.status}</span>
+                        </div>
+                        <div class="user-card-info">
+                            <div class="user-card-field">
+                                <strong>Name</strong>
+                                ${a.name || '-'}
+                            </div>
+                            <div class="user-card-field">
+                                <strong>Password</strong>
+                                ••••••••
+                            </div>
+                        </div>
+                        <div class="user-card-actions">
+                            <button class="edit-btn" onclick="editMTOAccount(this)" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            ${actionButton}
+                        </div>
+                    `;
+                    mobileMtoCards.appendChild(mobileCard);
+                }
             });
         }
 
         // Open edit modal for MTO account (reuse add/edit modal)
         function editMTOAccount(btn) {
+            // Check if button is in table row or mobile card
             const row = btn.closest('tr');
-            if (!row) return;
-            const username = row.cells[1].textContent.trim();
-            const name = row.cells[2].textContent.trim();
+            const card = btn.closest('.user-card');
+            
+            let username, name, statusText;
+            
+            if (row) {
+                // Desktop table
+                username = row.cells[1].textContent.trim();
+                name = row.cells[2].textContent.trim();
+                statusText = row.cells[5].textContent.trim();
+                currentEditingRow = row;
+            } else if (card) {
+                // Mobile card
+                username = card.querySelector('.user-card-title').textContent.trim();
+                name = card.querySelector('.user-card-field').nextElementSibling.textContent.trim();
+                statusText = card.querySelector('.status-badge').textContent.trim();
+                currentEditingRow = card;
+            } else {
+                return;
+            }
 
             // Pre-fill MTO edit modal fields and open it
             document.getElementById('mto-input-username').value = username;
             document.getElementById('mto-input-name').value = name;
-            // status is now in cell index 5 (0:id,1:username,2:name,3:password,4:role,5:status,6:actions)
-            const statusText = row.cells[5].textContent.trim();
             document.getElementById('mto-input-status').value = statusText;
             // Save reference to row for UI update after save
             currentEditingRow = row;
@@ -2136,16 +2246,37 @@
             .then(resp => resp.json())
             .then(result => {
                 if (result.success) {
-                    // Update UI rows in both MTO table and main user table (if present)
+                    const newStatus = makeActive ? 'Active' : 'Inactive';
+                    const statusClass = newStatus.toLowerCase();
+                    
+                    // Check if button is in table row or mobile card
                     const row = btn.closest('tr');
+                    const card = btn.closest('.user-card');
+                    
                     if (row) {
-                        // status cell moved to index 5
-                        row.cells[5].innerHTML = `<span class="status-badge status-${makeActive ? 'active' : 'inactive'}">${makeActive ? 'Active' : 'Inactive'}</span>`;
-                        // Replace action button (now at index 6)
+                        // Update desktop table row
+                        row.cells[5].innerHTML = `<span class="status-badge status-${statusClass}">${newStatus}</span>`;
                         const actionCell = row.cells[6];
                         actionCell.innerHTML = makeActive
-                            ? `<i class=\\"fas fa-edit edit-icon\\" title=\\"Edit\\" onclick=\\"editMTOAccount(this)\\"></i><button class=\\"suspend-btn\\" onclick=\\"toggleMTOActive(this, '${username}', false)\\">Suspend</button>`
-                            : `<i class=\\"fas fa-edit edit-icon\\" title=\\"Edit\\" onclick=\\"editMTOAccount(this)\\"></i><button class=\\"unsuspend-btn\\" onclick=\\"toggleMTOActive(this, '${username}', true)\\">Unsuspend</button>`;
+                            ? `<i class="fas fa-edit edit-icon" title="Edit" onclick="editMTOAccount(this)"></i><button class="suspend-btn" onclick="toggleMTOActive(this, '${username}', false)">Suspend</button>`
+                            : `<i class="fas fa-edit edit-icon" title="Edit" onclick="editMTOAccount(this)"></i><button class="unsuspend-btn" onclick="toggleMTOActive(this, '${username}', true)">Unsuspend</button>`;
+                    } else if (card) {
+                        // Update mobile card
+                        const statusBadge = card.querySelector('.status-badge');
+                        statusBadge.className = `status-badge status-${statusClass}`;
+                        statusBadge.textContent = newStatus;
+                        
+                        const actionsDiv = card.querySelector('.user-card-actions');
+                        const actionButton = makeActive 
+                            ? `<button class="suspend-btn" style="background:#e67e22;color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:12px;" onclick="toggleMTOActive(this, '${username}', false)">Suspend</button>`
+                            : `<button class="unsuspend-btn" style="background:#0077B6;color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:12px;" onclick="toggleMTOActive(this, '${username}', true)">Unsuspend</button>`;
+                        
+                        actionsDiv.innerHTML = `
+                            <button class="edit-btn" onclick="editMTOAccount(this)" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            ${actionButton}
+                        `;
                     }
 
                     // Also update main user table if that username exists there
@@ -2866,18 +2997,39 @@
         // Handle responsive layout changes
         function handleResponsiveLayout() {
             const isMobile = window.innerWidth <= 576;
-            const userTable = document.querySelector('.user-table');
+            
+            // Handle regular user tables
+            const userTables = document.querySelectorAll('.user-table');
             const mobileCards = document.getElementById('mobile-user-cards');
+            const mobileManageCards = document.getElementById('mobile-manage-cards');
+            const mobileMtoCards = document.getElementById('mobile-mto-cards');
             
             if (isMobile) {
-                if (userTable) userTable.style.display = 'none';
+                // Hide all tables
+                userTables.forEach(table => table.style.display = 'none');
+                
+                // Show mobile cards
                 if (mobileCards) {
                     mobileCards.style.display = 'block';
                     renderMobileUserCards();
                 }
+                if (mobileManageCards) {
+                    mobileManageCards.style.display = 'block';
+                }
+                if (mobileMtoCards) {
+                    mobileMtoCards.style.display = 'block';
+                }
+                
+                closeMobileMenu();
             } else {
-                if (userTable) userTable.style.display = 'table';
+                // Show all tables
+                userTables.forEach(table => table.style.display = 'table');
+                
+                // Hide mobile cards
                 if (mobileCards) mobileCards.style.display = 'none';
+                if (mobileManageCards) mobileManageCards.style.display = 'none';
+                if (mobileMtoCards) mobileMtoCards.style.display = 'none';
+                
                 closeMobileMenu();
             }
         }
@@ -3036,8 +3188,14 @@
         function renderManageUserTable() {
     const users = document.querySelectorAll('#user-table-body tr');
     const manageBody = document.getElementById('manage-table-body');
+    const mobileManageCards = document.getElementById('mobile-manage-cards');
+    
+    // Clear both desktop table and mobile cards
     manageBody.innerHTML = '';
-    users.forEach(row => {
+    if (mobileManageCards) mobileManageCards.innerHTML = '';
+    
+    users.forEach((row, index) => {
+        // Clone for desktop table
         const clone = row.cloneNode(true);
         // Replace actions with Suspend/Unsuspend button
         const actionsCell = clone.querySelector('.action-icons');
@@ -3055,6 +3213,56 @@
             }
         }
         manageBody.appendChild(clone);
+        
+        // Create mobile card
+        if (mobileManageCards) {
+            const cells = row.cells;
+            if (cells && cells.length >= 7) {
+                const homestayName = cells[1]?.textContent?.trim() || '';
+                const ownerName = cells[2]?.textContent?.trim() || '';
+                const address = cells[3]?.textContent?.trim() || '';
+                const username = cells[4]?.textContent?.trim() || '';
+                const status = cells[6]?.innerHTML || '';
+                
+                // Skip empty rows
+                if (!homestayName && !username) return;
+                
+                const statusText = cells[6].textContent.trim().toLowerCase();
+                const actionButton = statusText === 'inactive' 
+                    ? `<button class="unsuspend-btn" style="background:#0077B6;color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:12px;" onclick="unsuspendUser(this)">Unsuspend</button>`
+                    : `<button class="suspend-btn" style="background:#e67e22;color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:12px;" onclick="suspendUser(this)">Suspend</button>`;
+                
+                const card = document.createElement('div');
+                card.className = 'user-card';
+                
+                card.innerHTML = `
+                    <div class="user-card-header">
+                        <div>
+                            <div class="user-card-title">${homestayName || 'N/A'}</div>
+                            <div class="user-card-subtitle">${ownerName || 'N/A'}</div>
+                        </div>
+                        <div>${status}</div>
+                    </div>
+                    <div class="user-card-info">
+                        <div class="user-card-field">
+                            <strong>Address</strong>
+                            ${address || 'N/A'}
+                        </div>
+                        <div class="user-card-field">
+                            <strong>Username</strong>
+                            ${username || 'N/A'}
+                        </div>
+                    </div>
+                    <div class="user-card-actions">
+                        <div class="action-icons">
+                            ${actionButton}
+                        </div>
+                    </div>
+                `;
+                
+                mobileManageCards.appendChild(card);
+            }
+        }
     });
 }
 
