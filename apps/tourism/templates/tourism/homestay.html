@@ -1627,6 +1627,13 @@
             background-clip: text;
         }
 
+        .tourist-management-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
         .search-container {
             display: flex;
             align-items: center;
@@ -1694,7 +1701,13 @@
 
         .export-btn:hover .icon { background: rgba(255,255,255,0.15); color: #fff; }
 
-        .tourist-table {
+        .tourist-table-container {
+            margin-top: 20px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tourist-table, .user-table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
@@ -1703,33 +1716,33 @@
             box-shadow: var(--shadow-sm);
         }
 
-        .tourist-table th, .tourist-table td {
+        .tourist-table th, .tourist-table td, .user-table th, .user-table td {
             padding: 16px 20px;
             text-align: left;
             border-bottom: 1px solid var(--border-color);
         }
 
-        .tourist-table thead {
+        .tourist-table thead, .user-table thead {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
         }
 
-        .tourist-table thead th {
+        .tourist-table thead th, .user-table thead th {
             font-weight: 600;
             font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        .tourist-table tbody tr {
+        .tourist-table tbody tr, .user-table tbody tr {
             transition: var(--transition);
         }
 
-        .tourist-table tbody tr:nth-child(even) {
+        .tourist-table tbody tr:nth-child(even), .user-table tbody tr:nth-child(even) {
             background-color: #f8fafc;
         }
 
-        .tourist-table tbody tr:hover {
+        .tourist-table tbody tr:hover, .user-table tbody tr:hover {
             background: var(--primary-light);
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
@@ -1742,6 +1755,223 @@
 
         .status-maintenance::before {
             background: var(--danger-color);
+        }
+
+        /* Tourist Management Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .tourist-management-container {
+                padding: 20px 16px;
+                margin: 0 10px;
+            }
+
+            .tourist-management-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .tourist-management-header h2 {
+                font-size: 24px;
+            }
+
+            .tourist-management-header > div {
+                width: 100%;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .search-container {
+                width: 100%;
+            }
+
+            .search-container input {
+                flex: 1;
+                min-width: 0;
+                font-size: 16px;
+                padding: 14px 16px;
+            }
+
+            .search-container button {
+                padding: 14px 16px;
+                min-height: 48px;
+                min-width: 48px;
+            }
+
+            .export-btn {
+                width: 100%;
+                justify-content: center;
+                min-height: 48px;
+            }
+
+            /* Tourist table horizontal scroll */
+            .tourist-table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                margin: 0 -16px;
+                padding: 0 16px;
+            }
+
+            .tourist-table, .user-table {
+                min-width: 700px;
+            }
+
+            .tourist-table th,
+            .tourist-table td,
+            .user-table th,
+            .user-table td {
+                padding: 12px 8px;
+                font-size: 13px;
+                white-space: nowrap;
+            }
+        }
+
+        /* Hide regular tables on small screens and show card layout */
+        @media (max-width: 576px) {
+            .tourist-table, .user-table {
+                display: none !important;
+            }
+
+            .tourist-mobile-cards {
+                display: block !important;
+            }
+
+            .tourist-management-container {
+                padding: 15px 12px;
+                margin: 0 5px;
+            }
+
+            .tourist-management-header h2 {
+                font-size: 20px;
+            }
+
+            .export-btn {
+                padding: 12px 16px;
+                font-size: 14px;
+                min-height: 44px;
+            }
+        }
+
+        /* Tourist Mobile Card Styles - Hidden on desktop */
+        .tourist-mobile-cards {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            overflow: hidden !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* Only show mobile cards on small screens (mobile devices) */
+        @media (max-width: 576px) {
+            .tourist-mobile-cards {
+                display: block !important;
+                visibility: visible !important;
+                height: auto !important;
+                overflow: visible !important;
+                margin: inherit !important;
+                padding: inherit !important;
+            }
+        }
+        
+        /* Ensure cards are completely hidden on larger screens */
+        @media (min-width: 577px) {
+            .tourist-mobile-cards {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                overflow: hidden !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+        }
+
+        .tourist-card {
+            background: var(--white);
+            border-radius: var(--border-radius-lg);
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .tourist-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .tourist-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tourist-card-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 0;
+        }
+
+        .tourist-card-status {
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+
+        .tourist-card-info {
+            display: grid;
+            gap: 12px;
+        }
+
+        .tourist-card-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tourist-card-field strong {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .tourist-card-field span {
+            font-size: 14px;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        @media (max-width: 576px) {
+            .tourist-card {
+                padding: 16px;
+                margin-bottom: 12px;
+            }
+
+            .tourist-card-header {
+                margin-bottom: 12px;
+                padding-bottom: 8px;
+            }
+
+            .tourist-card-name {
+                font-size: 16px;
+            }
+
+            .tourist-card-info {
+                gap: 10px;
+            }
+
+            .tourist-card-field strong {
+                font-size: 11px;
+            }
+
+            .tourist-card-field span {
+                font-size: 13px;
+            }
         }
         
         /* Charts Container */
@@ -2628,10 +2858,11 @@
                 <div class="tourist-management-container">
                     <div class="tourist-management-header">
                         <h2>Tourist Management</h2>
-                        <div style="display:flex; gap:10px; align-items:center;">
+                        <div class="tourist-management-actions">
                             <div class="search-container">
                                 <input type="text" id="tourist-search" placeholder="Search tourists..." />
-                                <button onclick="searchTourists()"><i class="fas fa-search"></i></button>
+                                <button onclick="searchTourists()" title="Search"><i class="fas fa-search"></i></button>
+                                <button onclick="clearTouristSearch()" title="Clear" id="clear-search-btn" style="display:none;"><i class="fas fa-times"></i></button>
                             </div>
                             <div>
                                 <a href="/api/export-tourists/" class="export-btn" target="_blank">
@@ -2641,24 +2872,28 @@
                             </div>
                         </div>
                     </div>
-                    <table class="tourist-table" id="tourist-list-table">
-                        <thead>
-                            <tr>
-                                <th>Guest Name</th>
-                                <th>Contact Number</th>
-                                <th>Homestay Name</th>
-                                <th>Booking Date</th>
-                                <th>No. of Guests</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tourist-table-body">
-                            <!-- Table rows will be rendered by JS -->
-                        </tbody>
-                    </table>
+                    <div class="tourist-table-container">
+                        <table class="user-table" id="tourist-list-table">
+                            <thead>
+                                <tr>
+                                    <th>Guest Name</th>
+                                    <th>Contact Number</th>
+                                    <th>Address</th>
+                                    <th>Homestay</th>
+                                    <th>Date of Arrival</th>
+                                    <th>Date of Departure</th>
+                                    <th>No. of Guests</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tourist-table-body">
+                                <!-- Table rows will be rendered by JS -->
+                            </tbody>
+                        </table>
+                    </div>
                     
-                    <!-- Mobile Card Layout (hidden on desktop) -->
-                    <div class="mobile-tourist-cards" id="mobile-tourist-cards" style="display: none;">
+                    <!-- Mobile Cards Layout -->
+                    <div class="tourist-mobile-cards" id="tourist-mobile-cards">
                         <!-- Mobile cards will be populated by JavaScript -->
                     </div>
                 </div>
@@ -2668,23 +2903,35 @@
 // Load tourist data for this homestay from backend and render table
 async function loadMyTouristTable() {
     const tbody = document.getElementById('tourist-table-body');
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">Loading...</td></tr>';
+    const mobileCards = document.getElementById('tourist-mobile-cards');
+    
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;">Loading...</td></tr>';
+    mobileCards.innerHTML = '<div style="text-align:center;color:#888;padding:20px;">Loading...</div>';
+    
     try {
         const resp = await fetch('/api/my-tourists/');
         const data = await resp.json();
         console.log('[DEBUG] /api/my-tourists/ response:', data);
         if (!Array.isArray(data) || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">No tourists found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;">No tourists found.</td></tr>';
+            mobileCards.innerHTML = '<div style="text-align:center;color:#888;padding:20px;">No tourists found.</div>';
             return;
         }
+        
+        // Render table rows
         tbody.innerHTML = '';
+        mobileCards.innerHTML = '';
+        
         data.forEach(t => {
+            // Create table row
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${t.guest_name || '-'}</td>
                 <td>${t.contact_number || '-'}</td>
+                <td>${t.address || '-'}</td>
                 <td>${t.homestay_name || '-'}</td>
-                <td>${t.date || '-'}</td>
+                <td>${t.date_arrival || t.date || '-'}</td>
+                <td>${t.date_departure || '-'}</td>
                 <td>${t.num_people || '-'}</td>
                 <td>
                     ${t.status === 'reserved' ? '<span class="status-badge status-active">Reserved</span>' :
@@ -2693,9 +2940,51 @@ async function loadMyTouristTable() {
                 </td>
             `;
             tbody.appendChild(tr);
+            
+            // Create mobile card
+            const card = document.createElement('div');
+            card.className = 'tourist-card';
+            card.innerHTML = `
+                <div class="tourist-card-header">
+                    <h4 class="tourist-card-name">${t.guest_name || '-'}</h4>
+                    <div class="tourist-card-status">
+                        ${t.status === 'reserved' ? '<span class="status-badge status-active">Reserved</span>' :
+                          t.status === 'available' ? '<span class="status-badge status-inactive">Available</span>' :
+                          `<span class="status-badge status-archived">${t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : '-'}</span>`}
+                    </div>
+                </div>
+                <div class="tourist-card-info">
+                    <div class="tourist-card-field">
+                        <strong>Contact Number</strong>
+                        <span>${t.contact_number || '-'}</span>
+                    </div>
+                    <div class="tourist-card-field">
+                        <strong>Address</strong>
+                        <span>${t.address || '-'}</span>
+                    </div>
+                    <div class="tourist-card-field">
+                        <strong>Homestay</strong>
+                        <span>${t.homestay_name || '-'}</span>
+                    </div>
+                    <div class="tourist-card-field">
+                        <strong>Date of Arrival</strong>
+                        <span>${t.date_arrival || t.date || '-'}</span>
+                    </div>
+                    <div class="tourist-card-field">
+                        <strong>Date of Departure</strong>
+                        <span>${t.date_departure || '-'}</span>
+                    </div>
+                    <div class="tourist-card-field">
+                        <strong>No. of Guests</strong>
+                        <span>${t.num_people || '-'}</span>
+                    </div>
+                </div>
+            `;
+            mobileCards.appendChild(card);
         });
     } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Error loading data.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error loading data.</td></tr>';
+        mobileCards.innerHTML = '<div style="text-align:center;color:red;padding:20px;">Error loading data.</div>';
         console.error('[DEBUG] Error loading /api/my-tourists/:', err);
     }
 }
@@ -3306,33 +3595,98 @@ async function deleteRoom(iconElem, roomId) {
         function searchTourists() {
             const q = document.getElementById('tourist-search').value.trim();
             const tbody = document.getElementById('tourist-table-body');
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">Searching...</td></tr>';
+            const mobileCards = document.getElementById('tourist-mobile-cards');
+            const clearBtn = document.getElementById('clear-search-btn');
+            
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;">Searching...</td></tr>';
+            mobileCards.innerHTML = '<div style="text-align:center;color:#888;padding:20px;">Searching...</div>';
+            
+            if (q.length > 0) {
+                clearBtn.style.display = 'inline-block';
+            }
+            
             fetch(`/api/tourist-search/?q=${encodeURIComponent(q)}`)
                 .then(r => r.json())
                 .then(data => {
                     if (!Array.isArray(data) || data.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">No tourists found.</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;">No tourists found.</td></tr>';
+                        mobileCards.innerHTML = '<div style="text-align:center;color:#888;padding:20px;">No tourists found.</div>';
                         return;
                     }
+                    
                     tbody.innerHTML = '';
+                    mobileCards.innerHTML = '';
+                    
                     data.forEach(t => {
+                        // Create table row
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td>${t.guest_name || '-'}</td>
                             <td>${t.contact_number || '-'}</td>
+                            <td>${t.address || '-'}</td>
                             <td>${t.homestay__name || t.homestay_name || '-'}</td>
-                            <td>${t.date || '-'}</td>
+                            <td>${t.date_arrival || t.date || '-'}</td>
+                            <td>${t.date_departure || '-'}</td>
                             <td>${t.num_people || '-'}</td>
                             <td>
                                 ${t.status === 'reserved' ? '<span class="status-badge status-reserved">Reserved</span>' : t.status === 'available' ? '<span class="status-badge status-available">Available</span>' : `<span class="status-badge status-archived">${t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : '-'}</span>`}
                             </td>
                         `;
                         tbody.appendChild(tr);
+                        
+                        // Create mobile card
+                        const card = document.createElement('div');
+                        card.className = 'tourist-card';
+                        card.innerHTML = `
+                            <div class="tourist-card-header">
+                                <h4 class="tourist-card-name">${t.guest_name || '-'}</h4>
+                                <div class="tourist-card-status">
+                                    ${t.status === 'reserved' ? '<span class="status-badge status-reserved">Reserved</span>' : t.status === 'available' ? '<span class="status-badge status-available">Available</span>' : `<span class="status-badge status-archived">${t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : '-'}</span>`}
+                                </div>
+                            </div>
+                            <div class="tourist-card-info">
+                                <div class="tourist-card-field">
+                                    <strong>Contact Number</strong>
+                                    <span>${t.contact_number || '-'}</span>
+                                </div>
+                                <div class="tourist-card-field">
+                                    <strong>Address</strong>
+                                    <span>${t.address || '-'}</span>
+                                </div>
+                                <div class="tourist-card-field">
+                                    <strong>Homestay</strong>
+                                    <span>${t.homestay__name || t.homestay_name || '-'}</span>
+                                </div>
+                                <div class="tourist-card-field">
+                                    <strong>Date of Arrival</strong>
+                                    <span>${t.date_arrival || t.date || '-'}</span>
+                                </div>
+                                <div class="tourist-card-field">
+                                    <strong>Date of Departure</strong>
+                                    <span>${t.date_departure || '-'}</span>
+                                </div>
+                                <div class="tourist-card-field">
+                                    <strong>No. of Guests</strong>
+                                    <span>${t.num_people || '-'}</span>
+                                </div>
+                            </div>
+                        `;
+                        mobileCards.appendChild(card);
                     });
                 })
                 .catch(err => {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Error searching tourists.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error searching tourists.</td></tr>';
+                    mobileCards.innerHTML = '<div style="text-align:center;color:red;padding:20px;">Error searching tourists.</div>';
                 });
+        }
+
+        function clearTouristSearch() {
+            const searchInput = document.getElementById('tourist-search');
+            const clearBtn = document.getElementById('clear-search-btn');
+            
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            loadMyTouristTable(); // Reload original data
         }
 
         // Render table on load and when switching to tourist management

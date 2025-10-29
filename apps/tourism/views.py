@@ -357,8 +357,11 @@ def api_my_tourists(request):
             {
                 'guest_name': b.guest_name or '-',
                 'contact_number': b.contact_number or '-',
+                'address': b.address or '-',
                 'homestay_name': homestay.name,
-                'date': b.date.strftime('%Y-%m-%d'),
+                'date': b.date.strftime('%Y-%m-%d') if b.date else '-',
+                'date_arrival': b.date_arrival.strftime('%Y-%m-%d') if b.date_arrival else '-',
+                'date_departure': b.date_departure.strftime('%Y-%m-%d') if b.date_departure else '-',
                 'num_people': b.num_people or '-',
                 'status': b.status
             }
@@ -575,7 +578,7 @@ def api_tourist_search(request):
         bookings = bookings.filter(
             Q(guest_name__icontains=q) | Q(contact_number__icontains=q) | Q(homestay__name__icontains=q)
         )
-    bookings = bookings.values('guest_name', 'contact_number', 'homestay__name', 'date', 'date_arrival', 'date_departure', 'num_people', 'status')
+    bookings = bookings.values('guest_name', 'contact_number', 'address', 'homestay__name', 'date', 'date_arrival', 'date_departure', 'num_people', 'status')
     data = []
     for b in bookings:
         d = dict(b)
