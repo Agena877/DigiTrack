@@ -203,6 +203,10 @@
             height: auto;
             min-height: 100vh;
             transition: var(--transition);
+            width: calc(100vw - 280px);
+            max-width: calc(100vw - 280px);
+            box-sizing: border-box;
+            overflow-x: hidden;
         }
 
         /* Header bar styles */
@@ -221,12 +225,19 @@
             height: 90px;
             z-index: 1100;
             backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         .header-logo {
             display: flex;
             align-items: center;
             gap: 16px;
+            flex: 0 0 auto;
+            min-width: 0;
+            justify-content: flex-start;
         }
 
         .header-logo-icon {
@@ -264,6 +275,9 @@
             color: #fff;
             letter-spacing: 1.2px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .header-bar .title {
@@ -280,6 +294,12 @@
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             font-weight: 500;
+            flex: 1;
+            justify-content: flex-end;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
         }
 
         .user-profile:hover {
@@ -301,7 +321,37 @@
             background: transparent;
         }
 
+        /* Dashboard Header */
+        .dashboard-header {
+            margin-bottom: 32px;
+        }
+        
+        .dashboard-subtitle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+        
+        .dashboard-subtitle i {
+            font-size: 16px;
+            color: var(--primary-color);
+        }
+
         /* Dashboard Stats Cards */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -311,14 +361,12 @@
 
         .stat-card {
             background: var(--white);
-            padding: 32px 24px;
+            padding: 24px;
             border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-xl);
-            text-align: center;
+            box-shadow: var(--shadow-md);
             display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
+            gap: 16px;
             transition: var(--transition);
             border: 1px solid var(--border-color);
             position: relative;
@@ -336,19 +384,37 @@
         }
 
         .stat-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-xl);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .stat-content {
+            flex: 1;
         }
 
         .stat-number {
-            font-size: 36px;
+            font-size: 28px;
             font-weight: 700;
             color: var(--text-dark);
-            margin-bottom: 8px;
+            margin-bottom: 4px;
+            line-height: 1;
         }
 
         .stat-label {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-muted);
             font-weight: 500;
             text-transform: uppercase;
@@ -660,6 +726,11 @@
             /* ensure toggle sits above other page content so it's always clickable */
             position: relative;
             z-index: 11002;
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            align-items: center;
+            justify-content: center;
         }
 
         .mobile-menu-toggle:hover {
@@ -748,6 +819,22 @@
         }
 
         /* Responsive design */
+        @media (max-width: 1200px) {
+            .charts-container {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .monthly-chart {
+                order: 1; /* Monthly Trends → Top */
+            }
+            
+            .yearly-chart {
+                order: 2; /* Yearly Trends → Bottom */
+            }
+        }
+        
         @media (max-width: 1024px) {
             .sidebar {
                 width: 240px;
@@ -755,10 +842,35 @@
             
             .main-content {
                 margin-left: 240px;
+                width: calc(100vw - 240px);
+                max-width: calc(100vw - 240px);
+            }
+
+            .header-bar {
+                padding: 0 30px;
+            }
+
+            .header-logo-title {
+                font-size: 1.6rem;
+            }
+
+            .user-profile {
+                padding: 10px 16px;
+                flex: 1;
+                justify-content: flex-end;
             }
 
             .stats-grid {
                 grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            }
+            
+            .dashboard-stats {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
             }
 
             .content-area {
@@ -790,33 +902,108 @@
             
             .main-content {
                 margin-left: 0;
+                width: 100vw;
+                max-width: 100vw;
             }
             
             .header-bar {
                 padding: 0 20px;
                 justify-content: space-between;
+                height: 80px;
             }
 
             .header-logo {
                 order: 2;
+                flex: 0 0 auto;
+                justify-content: flex-start;
+                max-width: 200px;
             }
 
             .user-profile {
                 order: 3;
                 padding: 8px 12px;
+                max-width: none;
+                flex: 1;
+                font-size: 14px;
+                justify-content: flex-end;
+            }
+
+            .user-profile .user-name {
+                font-size: 13px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .mobile-menu-toggle {
                 order: 1;
+                display: flex;
             }
 
             .header-logo-title {
                 font-size: 1.4rem;
             }
+
+            .header-logo-icon {
+                width: 48px;
+                height: 48px;
+                margin-right: 12px;
+            }
             
             .stats-grid {
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
                 gap: 16px;
+            }
+            
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .charts-container {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+                margin-top: 1.5rem;
+            }
+            
+            .monthly-chart {
+                order: 1; /* Monthly Trends → Top */
+            }
+            
+            .yearly-chart {
+                order: 2; /* Yearly Trends → Bottom */
+            }
+            
+            .chart-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 16px 20px 12px 20px;
+            }
+            
+            .chart-title {
+                font-size: 15px;
+            }
+            
+            .chart-content {
+                padding: 16px 20px;
+                min-height: 250px;
+            }
+            
+            .chart-interpretation {
+                padding: 12px 20px 16px 20px;
+                display: block !important;
+            }
+            
+            .interpretation-title {
+                font-size: 13px;
+                margin-bottom: 6px;
+            }
+            
+            .interpretation-text {
+                font-size: 12px;
+                line-height: 1.4;
             }
 
             .content-area {
@@ -862,32 +1049,72 @@
                 min-width: 600px;
             }
         }
+
+        @media (max-width: 480px) {
+            .header-bar {
+                height: 65px;
+                padding: 0 14px;
+            }
+
+            .header-logo-title {
+                font-size: 1.1rem;
+            }
+
+            .user-profile .user-name {
+                font-size: 12px;
+            }
+
+            .header-logo {
+                justify-content: flex-start;
+            }
+        }
         
         @media (max-width: 576px) {
             .header-bar {
                 height: 70px;
                 padding: 0 16px;
+                gap: 8px;
+            }
+
+            .header-logo {
+                justify-content: flex-start;
+                flex: 0 0 auto;
+                max-width: 160px;
             }
 
             .header-logo-icon {
                 width: 40px;
                 height: 40px;
                 margin-right: 8px;
+                flex-shrink: 0;
             }
 
             .header-logo-title {
-                font-size: 1.2rem;
-                display: none;
+                font-size: 1.1rem;
             }
 
             .user-profile {
-                font-size: 14px;
-                padding: 6px 10px;
+                font-size: 12px;
+                padding: 6px 8px;
+                flex: 1;
+                justify-content: flex-end;
+                min-width: 0;
             }
 
             .user-profile i {
+                font-size: 18px;
+                margin-right: 4px;
+            }
+
+            .user-profile .user-name {
+                font-size: 11px;
+                max-width: 100px;
+            }
+
+            .mobile-menu-toggle {
+                width: 36px;
+                height: 36px;
                 font-size: 20px;
-                margin-right: 6px;
             }
 
             .sidebar {
@@ -909,9 +1136,100 @@
                 grid-template-columns: 1fr;
                 gap: 12px;
             }
+            
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
 
             .stat-card {
-                padding: 20px 16px;
+                padding: 16px;
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+            }
+            
+            .stat-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 20px;
+            }
+            
+            .stat-number {
+                font-size: 24px;
+            }
+            
+            .charts-container {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                margin-top: 1rem;
+            }
+            
+            .monthly-chart {
+                order: 1; /* Monthly Trends → Top */
+            }
+            
+            .yearly-chart {
+                order: 2; /* Yearly Trends → Bottom */
+            }
+            
+            .chart-header {
+                padding: 12px 16px 8px 16px;
+            }
+            
+            .chart-title {
+                font-size: 14px;
+            }
+            
+            .chart-filter-select {
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+            
+            .chart-content {
+                padding: 12px 16px;
+                min-height: 200px;
+            }
+            
+            .chart-interpretation {
+                padding: 10px 16px 14px 16px;
+                display: block !important;
+                background: #f8fafc;
+            }
+            
+            .interpretation-title {
+                font-size: 12px;
+                margin-bottom: 6px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            
+            .interpretation-text {
+                font-size: 11px;
+                line-height: 1.4;
+                color: var(--text-muted);
+            }
+            
+            .interpretation-text .highlight {
+                color: var(--primary-color);
+                font-weight: 600;
+            }
+            
+            .interpretation-text .trend-up {
+                color: var(--success-color);
+                font-weight: 600;
+            }
+            
+            .interpretation-text .trend-down {
+                color: var(--danger-color);
+                font-weight: 600;
+            }
+            
+            .interpretation-text .trend-stable {
+                color: var(--secondary-color);
+                font-weight: 600;
             }
 
             .tourist-management-container,
@@ -1025,6 +1343,43 @@
             .header-bar {
                 height: 60px;
                 padding: 0 12px;
+                gap: 6px;
+            }
+
+            .header-logo {
+                max-width: calc(100% - 100px);
+            }
+
+            .header-logo-icon {
+                width: 36px;
+                height: 36px;
+                margin-right: 6px;
+            }
+
+            .header-logo-title {
+                display: none;
+            }
+
+            .user-profile {
+                padding: 4px 6px;
+                max-width: 60px;
+                min-width: 50px;
+            }
+
+            .user-profile i {
+                font-size: 16px;
+                margin-right: 0;
+            }
+
+            .user-profile .user-name {
+                display: none;
+            }
+
+            .mobile-menu-toggle {
+                width: 32px;
+                height: 32px;
+                font-size: 18px;
+                padding: 4px;
             }
 
             .content-area {
@@ -1046,6 +1401,30 @@
         @media (max-width: 768px) and (orientation: landscape) {
             .header-bar {
                 height: 60px;
+                padding: 0 16px;
+            }
+
+            .header-logo-icon {
+                width: 36px;
+                height: 36px;
+            }
+
+            .header-logo-title {
+                display: none;
+            }
+
+            .user-profile {
+                padding: 4px 8px;
+                font-size: 12px;
+            }
+
+            .user-profile .user-name {
+                display: none;
+            }
+
+            .mobile-menu-toggle {
+                width: 32px;
+                height: 32px;
             }
 
             .content-area {
@@ -1058,6 +1437,33 @@
 
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .dashboard-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .charts-container {
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .monthly-chart {
+                order: 1; /* Monthly Trends → Top */
+            }
+            
+            .yearly-chart {
+                order: 2; /* Yearly Trends → Bottom */
+            }
+            
+            .chart-interpretation {
+                padding: 8px 16px 12px 16px;
+                display: block !important;
+            }
+            
+            .interpretation-text {
+                font-size: 11px;
+                line-height: 1.3;
             }
         }
 
@@ -1336,6 +1742,169 @@
 
         .status-maintenance::before {
             background: var(--danger-color);
+        }
+        
+        /* Charts Container */
+        .charts-container {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .monthly-chart {
+            order: 1; /* Monthly chart at top */
+        }
+        
+        .yearly-chart {
+            order: 2; /* Yearly chart at bottom */
+        }
+        
+        .chart-card {
+            background: var(--white);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: var(--transition);
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .chart-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+        
+        .chart-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .chart-title i {
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+        
+        .chart-filter-select {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 13px;
+            background: white;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .chart-filter-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 119, 182, 0.1);
+        }
+        
+        .chart-content {
+            padding: 20px 24px;
+            position: relative;
+            min-height: 300px;
+        }
+        
+        .chart-interpretation {
+            padding: 16px 24px 20px 24px;
+            background: #f8fafc;
+            border-top: 1px solid var(--border-color);
+            display: block !important; /* Ensure interpretations are always visible */
+        }
+        
+        .interpretation-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+        
+        .interpretation-title i {
+            font-size: 14px;
+        }
+        
+        .interpretation-text {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .interpretation-text .highlight {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .interpretation-text .trend-up {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+        
+        .interpretation-text .trend-down {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+        
+        .interpretation-text .trend-stable {
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+        
+        /* Mobile-specific improvements for interpretations */
+        @media (max-width: 480px) {
+            .chart-interpretation {
+                padding: 8px 12px 12px 12px;
+                margin-top: 8px;
+            }
+            
+            .interpretation-title {
+                font-size: 11px;
+                margin-bottom: 4px;
+            }
+            
+            .interpretation-text {
+                font-size: 10px;
+                line-height: 1.3;
+            }
+        }
+        
+        /* Ensure interpretations are readable on all devices */
+        @media (hover: none) and (pointer: coarse) {
+            .chart-interpretation {
+                padding: 12px 16px;
+                background: #f0f4f8;
+                border-radius: 0 0 8px 8px;
+            }
+            
+            .interpretation-text {
+                font-size: 12px;
+                line-height: 1.5;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+            }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
@@ -1696,15 +2265,32 @@
                     </div>
             <!-- Dashboard Section -->
             <div id="dashboard" class="content-section active">
-                <h2 style="margin-bottom: 20px;">Dashboard</h2>
-                <div class="stats-grid">
+                <div class="dashboard-header">
+                    <h2 style="margin-bottom: 20px;">Dashboard Overview</h2>
+                    <div class="dashboard-subtitle">
+                        <i class="fas fa-chart-bar"></i>
+                        Real-time insights for your homestay
+                    </div>
+                </div>
+                
+                <div class="dashboard-stats">
                     <div class="stat-card">
-                        <div class="stat-number" id="totalRooms"></div>
-                        <div class="stat-label">Total Rooms</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-door-open"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="totalRooms">-</div>
+                            <div class="stat-label">Total Rooms</div>
+                        </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number" id="totalTourists">0</div>
-                        <div class="stat-label">Total Tourists</div>
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="totalTourists">-</div>
+                            <div class="stat-label">Total Guests</div>
+                        </div>
                     </div>
                 </div>
                 <!-- Room Status Overview Table (should remain in dashboard) -->
@@ -1730,23 +2316,51 @@
                 </div>
 
                 <!-- Tourist Trends Charts -->
-                <div class="charts-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 2rem;">
-                    <div class="chart-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                        <div class="chart-header" style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
-                            <select id="monthly-trend-year-select" style="padding: 5px 10px; border: 1px solid #ccc; border-radius: 5px;"></select>
+                <div class="charts-container">
+                    <div class="chart-card monthly-chart">
+                        <div class="chart-header">
+                            <div class="chart-title">
+                                <i class="fas fa-chart-line"></i>
+                                Monthly Guest Trends
+                            </div>
+                            <select id="monthly-trend-year-select" class="chart-filter-select"></select>
                         </div>
-                        <h4>Trends of Tourist per Month</h4>
-                        <canvas id="tourist-monthly-chart"></canvas>
+                        <div class="chart-content">
+                            <canvas id="tourist-monthly-chart"></canvas>
+                        </div>
+                        <div id="monthly-interpretation" class="chart-interpretation">
+                            <div class="interpretation-title">
+                                <i class="fas fa-lightbulb"></i>
+                                Monthly Insights
+                            </div>
+                            <div class="interpretation-text" id="monthly-interpretation-text">
+                                Analyzing monthly guest patterns...
+                            </div>
+                        </div>
                     </div>
-                    <div class="chart-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-                        <div class="chart-header" style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
-                            <select id="yearly-trend-range-select" style="padding: 5px 10px; border: 1px solid #ccc; border-radius: 5px;">
+                    <div class="chart-card yearly-chart">
+                        <div class="chart-header">
+                            <div class="chart-title">
+                                <i class="fas fa-chart-area"></i>
+                                Yearly Guest Trends
+                            </div>
+                            <select id="yearly-trend-range-select" class="chart-filter-select">
                                 <option value="5">Last 5 Years</option>
                                 <option value="10">Last 10 Years</option>
                             </select>
                         </div>
-                        <h4>Trends of Tourist per Year</h4>
-                        <canvas id="tourist-yearly-chart"></canvas>
+                        <div class="chart-content">
+                            <canvas id="tourist-yearly-chart"></canvas>
+                        </div>
+                        <div id="yearly-interpretation" class="chart-interpretation">
+                            <div class="interpretation-title">
+                                <i class="fas fa-lightbulb"></i>
+                                Yearly Insights
+                            </div>
+                            <div class="interpretation-text" id="yearly-interpretation-text">
+                                Analyzing yearly guest patterns...
+                            </div>
+                        </div>
                     </div>
                 </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
@@ -1776,7 +2390,8 @@
         const year = parseInt(document.getElementById('monthly-trend-year-select').value) || currentYear;
         const yearRange = parseInt(document.getElementById('yearly-trend-range-select').value) || 5;
         const data = await fetchTouristTrends(year, yearRange);
-        // Monthly
+        
+        // Monthly Chart
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const monthlyData = months.map(m => data.monthly[m] || 0);
         const ctxMonth = document.getElementById('tourist-monthly-chart').getContext('2d');
@@ -1817,7 +2432,8 @@
             },
             plugins: [ChartDataLabels]
         });
-        // Yearly (ensure full range is shown)
+        
+        // Yearly Chart (ensure full range is shown)
         const startYear = year - yearRange + 1;
         const endYear = year;
         const years = [];
@@ -1861,6 +2477,110 @@
             },
             plugins: [ChartDataLabels]
         });
+        
+        // Generate interpretations
+        generateMonthlyInterpretation(monthlyData, months, year);
+        generateYearlyInterpretation(yearlyData, years);
+        
+        // Ensure interpretations are visible
+        const monthlyInterp = document.getElementById('monthly-interpretation');
+        const yearlyInterp = document.getElementById('yearly-interpretation');
+        if (monthlyInterp) monthlyInterp.style.display = 'block';
+        if (yearlyInterp) yearlyInterp.style.display = 'block';
+    }
+    
+    function generateMonthlyInterpretation(monthlyData, months, year) {
+        const interpretationText = document.getElementById('monthly-interpretation-text');
+        const totalGuests = monthlyData.reduce((sum, val) => sum + val, 0);
+        const maxVal = Math.max(...monthlyData);
+        const minVal = Math.min(...monthlyData.filter(v => v > 0));
+        const peakMonth = months[monthlyData.indexOf(maxVal)];
+        const currentMonth = new Date().getMonth();
+        
+        let interpretation = '';
+        
+        if (totalGuests === 0) {
+            interpretation = `<span class="highlight">No guest data recorded for ${year}.</span> Consider starting marketing efforts to attract visitors to your homestay.`;
+        } else {
+            const avgGuests = Math.round(totalGuests / 12);
+            interpretation += `In <span class="highlight">${year}</span>, your homestay welcomed <span class="highlight">${totalGuests} guests</span> total, averaging <span class="highlight">${avgGuests} guests per month</span>. `;
+            
+            if (maxVal > 0) {
+                interpretation += `<span class="highlight">${peakMonth}</span> was your busiest month with <span class="trend-up">${maxVal} guests</span>. `;
+            }
+            
+            // Current month analysis
+            if (year === new Date().getFullYear() && monthlyData[currentMonth] > 0) {
+                const currentMonthVal = monthlyData[currentMonth];
+                const prevMonthVal = currentMonth > 0 ? monthlyData[currentMonth - 1] : 0;
+                if (currentMonthVal > prevMonthVal) {
+                    interpretation += `This month shows <span class="trend-up">positive growth</span> with ${currentMonthVal} guests. `;
+                } else if (currentMonthVal < prevMonthVal) {
+                    interpretation += `This month shows <span class="trend-down">${currentMonthVal} guests</span>, a decrease from last month. `;
+                }
+            }
+            
+            // Seasonal insights
+            const summerMonths = [5, 6, 7]; // Jun, Jul, Aug
+            const summerAvg = summerMonths.reduce((sum, idx) => sum + monthlyData[idx], 0) / 3;
+            const winterMonths = [11, 0, 1]; // Dec, Jan, Feb  
+            const winterAvg = winterMonths.reduce((sum, idx) => sum + monthlyData[idx], 0) / 3;
+            
+            if (summerAvg > winterAvg * 1.5) {
+                interpretation += `Your homestay shows strong <span class="trend-up">summer seasonality</span> - consider special winter packages to boost off-season bookings.`;
+            } else if (winterAvg > summerAvg * 1.5) {
+                interpretation += `Interesting trend: <span class="trend-up">winter months outperform summer</span> - you have a unique market advantage.`;
+            } else {
+                interpretation += `Guest distribution is <span class="trend-stable">relatively balanced</span> throughout the year.`;
+            }
+        }
+        
+        interpretationText.innerHTML = interpretation;
+    }
+    
+    function generateYearlyInterpretation(yearlyData, years) {
+        const interpretationText = document.getElementById('yearly-interpretation-text');
+        const totalGuests = yearlyData.reduce((sum, val) => sum + val, 0);
+        
+        let interpretation = '';
+        
+        if (totalGuests === 0) {
+            interpretation = `<span class="highlight">No guest data available</span> for the selected period. Focus on establishing your homestay's online presence and marketing strategy.`;
+        } else {
+            const currentYear = new Date().getFullYear();
+            const yearRange = years.length;
+            const avgPerYear = Math.round(totalGuests / yearRange);
+            
+            interpretation += `Over the last <span class="highlight">${yearRange} years</span>, your homestay has hosted <span class="highlight">${totalGuests} guests total</span>, averaging <span class="highlight">${avgPerYear} guests per year</span>. `;
+            
+            // Growth trend analysis
+            const recentYears = yearlyData.slice(-3).filter(v => v > 0);
+            if (recentYears.length >= 2) {
+                const growth = ((recentYears[recentYears.length - 1] - recentYears[0]) / recentYears[0]) * 100;
+                if (growth > 10) {
+                    interpretation += `Excellent news: you're showing <span class="trend-up">${Math.round(growth)}% growth</span> in recent years! `;
+                } else if (growth < -10) {
+                    interpretation += `Recent years show a <span class="trend-down">${Math.round(Math.abs(growth))}% decline</span> - consider refreshing your marketing approach. `;
+                } else {
+                    interpretation += `Your guest numbers remain <span class="trend-stable">steady</span> over recent years. `;
+                }
+            }
+            
+            // Best year analysis
+            const maxYear = years[yearlyData.indexOf(Math.max(...yearlyData))];
+            const maxGuests = Math.max(...yearlyData);
+            if (maxGuests > 0) {
+                interpretation += `<span class="highlight">${maxYear}</span> was your best year with <span class="trend-up">${maxGuests} guests</span>. `;
+                
+                if (maxYear === currentYear.toString()) {
+                    interpretation += `This year is shaping up to be your most successful yet!`;
+                } else {
+                    interpretation += `Consider what made that year special and how to replicate that success.`;
+                }
+            }
+        }
+        
+        interpretationText.innerHTML = interpretation;
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -2549,25 +3269,9 @@ async function deleteRoom(iconElem, roomId) {
             const tableRows = document.querySelectorAll('#roomTableBody tr');
             const totalRooms = tableRows.length;
 
-            let availableRooms = 0;
-            let reservedRooms = 0;
-            let occupiedRooms = 0;
-
-            tableRows.forEach(row => {
-                const statusBadge = row.querySelector('.status-badge');
-                const status = statusBadge.textContent.toLowerCase().trim();
-
-                if (status === 'available') availableRooms++;
-                else if (status === 'reserved') reservedRooms++;
-                else if (status === 'occupied') occupiedRooms++;
-            });
-
-            const occupancyRate = totalRooms > 0 ? Math.round(((reservedRooms + occupiedRooms) / totalRooms) * 100) : 0;
-
             // Update dashboard stats
             const totalRoomsElem = document.getElementById('totalRooms');
-            if (totalRoomsElem) totalRoomsElem.textContent = totalRooms;
-            const availableRoomsElem = document.getElementById('availableRooms');
+            if (totalRoomsElem) totalRoomsElem.textContent = totalRooms || '-';
 
             // Fetch and update total guests for this homestay
             try {
@@ -2577,14 +3281,14 @@ async function deleteRoom(iconElem, roomId) {
                 if (Array.isArray(data)) {
                     totalGuests = data.reduce((sum, booking) => {
                         const n = parseInt(booking.num_people, 10);
-                        return sum + (isNaN(n) ? 0 : n);
-                    }, 0);
+                    return sum + (isNaN(n) ? 0 : n);
+                }, 0);
                 }
                 const totalTouristsElem = document.getElementById('totalTourists');
-                if (totalTouristsElem) totalTouristsElem.textContent = totalGuests;
+                if (totalTouristsElem) totalTouristsElem.textContent = totalGuests || '-';
             } catch (e) {
                 const totalTouristsElem = document.getElementById('totalTourists');
-                if (totalTouristsElem) totalTouristsElem.textContent = '0';
+                if (totalTouristsElem) totalTouristsElem.textContent = '-';
             }
         }
 
