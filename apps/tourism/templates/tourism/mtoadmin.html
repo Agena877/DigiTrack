@@ -832,28 +832,93 @@
 
         .export-btn:hover .icon { background: rgba(255,255,255,0.15); color: #fff; }
         
+        /* Tourist Management Actions */
+        .tourist-management-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            position: relative;
+        }
+
+        .search-container input {
+            padding: 10px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            min-width: 200px;
+            transition: var(--transition);
+        }
+
+        .search-container input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.1);
+            outline: none;
+        }
+
+        .search-container button {
+            padding: 10px 12px;
+            border: 2px solid var(--border-color);
+            background: var(--white);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-muted);
+        }
+
+        .search-container button:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .search-container button i {
+            font-size: 14px;
+        }
+        
         .tourist-table {
             width: 100%;
             border-collapse: collapse;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
         }
         
         .tourist-table th, .tourist-table td {
-            padding: 12px 15px;
+            padding: 16px 20px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
         }
         
         .tourist-table thead {
-            background-color: #4a90e2;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
         }
         
+        .tourist-table thead th {
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        
         .tourist-table tbody tr:nth-child(even) {
-            background-color: #f9f9f9;
+            background-color: #f8fafc;
         }
         
         .tourist-table tbody tr:hover {
-            background-color: #f1f1f1;
+            background: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
         }
         
         /* Modal styles */
@@ -1367,10 +1432,79 @@
                 border-top: 1px solid var(--border-color);
             }
 
-            /* Hide regular tables on small screens */
+            /* Tourist Management Mobile Styles */
+            @media (max-width: 768px) {
+                .tourist-management-container {
+                    padding: 20px 16px;
+                    margin: 0 10px;
+                }
+
+                .tourist-management-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 15px;
+                }
+
+                .tourist-management-header h2 {
+                    font-size: 24px;
+                }
+
+                .tourist-management-actions {
+                    width: 100%;
+                    flex-direction: column;
+                    gap: 12px;
+                }
+
+                .search-container {
+                    width: 100%;
+                }
+
+                .search-container input {
+                    flex: 1;
+                    min-width: 0;
+                    font-size: 16px;
+                    padding: 14px 16px;
+                }
+
+                .search-container button {
+                    padding: 14px 16px;
+                    min-height: 48px;
+                    min-width: 48px;
+                }
+
+                .export-btn {
+                    width: 100%;
+                    justify-content: center;
+                    min-height: 48px;
+                }
+
+                /* Tourist table horizontal scroll */
+                .tourist-table-container {
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
+                    margin: 0 -16px;
+                    padding: 0 16px;
+                }
+
+                .tourist-table {
+                    min-width: 700px;
+                }
+
+                .tourist-table th,
+                .tourist-table td {
+                    padding: 12px 8px;
+                    font-size: 13px;
+                    white-space: nowrap;
+                }
+            }
+
+            /* Hide regular tables on small screens and show card layout */
             @media (max-width: 576px) {
+                .tourist-table {
+                    display: none !important;
+                }
+
                 .user-table,
-                .tourist-table,
                 .homestay-table {
                     display: none !important;
                 }
@@ -1378,6 +1512,149 @@
                 .mobile-table-cards {
                     display: block !important;
                 }
+
+                .tourist-management-container {
+                    padding: 15px 12px;
+                    margin: 0 5px;
+                }
+
+                .tourist-management-header h2 {
+                    font-size: 20px;
+                }
+
+                .export-btn {
+                    padding: 12px 16px;
+                    font-size: 14px;
+                    min-height: 44px;
+                }
+
+                .tourist-card {
+                    padding: 16px;
+                    margin-bottom: 12px;
+                }
+
+                .tourist-card-header {
+                    margin-bottom: 12px;
+                    padding-bottom: 8px;
+                }
+
+                .tourist-card-name {
+                    font-size: 16px;
+                }
+
+                .tourist-card-info {
+                    gap: 10px;
+                }
+
+                .tourist-card-field strong {
+                    font-size: 11px;
+                }
+
+                .tourist-card-field span {
+                    font-size: 13px;
+                }
+            }
+
+            /* Tourist Mobile Card Styles - Hidden on desktop */
+            /* Hide mobile cards on desktop/web view */
+            .tourist-mobile-cards {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                overflow: hidden !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            /* Only show mobile cards on small screens (mobile devices) */
+            @media (max-width: 576px) {
+                .tourist-mobile-cards {
+                    display: block !important;
+                    visibility: visible !important;
+                    height: auto !important;
+                    overflow: visible !important;
+                    margin: inherit !important;
+                    padding: inherit !important;
+                }
+            }
+            
+            /* Ensure cards are completely hidden on larger screens */
+            @media (min-width: 577px) {
+                .tourist-mobile-cards {
+                    display: none !important;
+                    visibility: hidden !important;
+                    height: 0 !important;
+                    overflow: hidden !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                }
+                
+                /* Ensure table is always visible on web/desktop view */
+                .tourist-table-container {
+                    display: block !important;
+                    visibility: visible !important;
+                }
+            }
+
+            .tourist-card {
+                background: var(--white);
+                border-radius: var(--border-radius-lg);
+                padding: 20px;
+                margin-bottom: 16px;
+                box-shadow: var(--shadow-md);
+                border: 1px solid var(--border-color);
+                transition: var(--transition);
+            }
+
+            .tourist-card:hover {
+                box-shadow: var(--shadow-lg);
+                transform: translateY(-2px);
+            }
+
+            .tourist-card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 16px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .tourist-card-name {
+                font-size: 18px;
+                font-weight: 700;
+                color: var(--text-dark);
+                margin: 0;
+            }
+
+            .tourist-card-status {
+                flex-shrink: 0;
+                margin-left: 10px;
+            }
+
+            .tourist-card-info {
+                display: grid;
+                gap: 12px;
+            }
+
+            .tourist-card-field {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .tourist-card-field strong {
+                font-size: 12px;
+                font-weight: 600;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 4px;
+            }
+
+            .tourist-card-field span {
+                font-size: 14px;
+                color: var(--text-dark);
+                font-weight: 500;
             }
 
             /* Horizontal scroll for tables on medium screens */
@@ -1925,10 +2202,11 @@
                 <div class="tourist-management-container">
                     <div class="tourist-management-header">
                         <h2>Tourist Management</h2>
-                        <div style="display:flex; gap:10px; align-items:center;">
+                        <div class="tourist-management-actions">
                             <div class="search-container">
                                 <input type="text" id="tourist-search" placeholder="Search tourists..." />
-                                <button onclick="searchTourists()"><i class="fas fa-search"></i></button>
+                                <button onclick="searchTourists()" title="Search"><i class="fas fa-search"></i></button>
+                                <button onclick="clearTouristSearch()" title="Clear" id="clear-search-btn" style="display:none;"><i class="fas fa-times"></i></button>
                             </div>
                             <div>
                                 <a href="/api/export-tourists-all/" class="export-btn" target="_blank">
@@ -1938,23 +2216,30 @@
                             </div>
                         </div>
                     </div>
-                    <table class="user-table" id="tourist-list-table">
-                        <thead>
-                            <tr>
-                                <th>Guest Name</th>
-                                <th>Contact Number</th>
-                                <th>Address</th>
-                                <th>Homestay</th>
-                                <th>Date of Arrival</th>
-                                <th>Date of Departure</th>
-                                <th>No. of Guests</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tourist-table-body">
-                            <!-- Table rows will be rendered by JS -->
-                        </tbody>
-                    </table>
+                    <div class="tourist-table-container">
+                        <table class="user-table" id="tourist-list-table">
+                            <thead>
+                                <tr>
+                                    <th>Guest Name</th>
+                                    <th>Contact Number</th>
+                                    <th>Address</th>
+                                    <th>Homestay</th>
+                                    <th>Date of Arrival</th>
+                                    <th>Date of Departure</th>
+                                    <th>No. of Guests</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tourist-table-body">
+                                <!-- Table rows will be rendered by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Mobile Cards Layout -->
+                    <div class="tourist-mobile-cards" id="tourist-mobile-cards">
+                        <!-- Mobile cards will be rendered by JS -->
+                    </div>
                 </div>
             </div>
             <!-- end Tourist Management Page -->
@@ -2053,8 +2338,16 @@
     // Load tourist data from backend and render table and dashboard
     async function loadTouristTableAndDashboard() {
         const tbody = document.getElementById('tourist-table-body');
+        const mobileCards = document.getElementById('tourist-mobile-cards');
         const touristCountDiv = document.getElementById('tourist-count');
+        
         tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;">Loading...</td></tr>';
+        if (mobileCards && window.innerWidth <= 576) {
+            mobileCards.innerHTML = '<div style="text-align:center;color:#888;padding:20px;">Loading...</div>';
+        } else if (mobileCards) {
+            mobileCards.innerHTML = '';
+        }
+        
         try {
             const resp = await fetch('/api/tourist-list/');
             const data = await resp.json();
@@ -2067,13 +2360,31 @@
                 });
             }
             if (touristCountDiv) touristCountDiv.textContent = totalGuests;
-            // Table
+            
+            // Handle empty data
             if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;">No tourists found.</td></tr>';
+                if (mobileCards && window.innerWidth <= 576) {
+                    mobileCards.innerHTML = '<div style="text-align:center;color:#888;padding:40px;">No tourists found.</div>';
+                } else if (mobileCards) {
+                    mobileCards.innerHTML = '';
+                }
                 return;
             }
+            
+            // Populate table
             tbody.innerHTML = '';
+            // Clear mobile cards for desktop, prepare for mobile
+            if (mobileCards) {
+                if (window.innerWidth <= 576) {
+                    mobileCards.innerHTML = ''; // Clear to prepare for new data
+                } else {
+                    mobileCards.innerHTML = ''; // Keep empty on desktop
+                }
+            }
+            
             data.forEach(t => {
+                // Create table row
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${t.guest_name || '-'}</td>
@@ -2090,13 +2401,71 @@
                     </td>
                 `;
                 tbody.appendChild(tr);
+                
+                // Create mobile card (only populate on mobile devices)
+                if (mobileCards && window.innerWidth <= 576) {
+                    const card = document.createElement('div');
+                    card.className = 'tourist-card';
+                    card.innerHTML = `
+                        <div class="tourist-card-header">
+                            <h3 class="tourist-card-name">${t.guest_name || 'Unknown'}</h3>
+                            <div class="tourist-card-status">
+                                ${t.status === 'reserved' ? '<span class="status-badge status-reserved">Reserved</span>' :
+                                  t.status === 'available' ? '<span class="status-badge status-available">Available</span>' :
+                                  `<span class="status-badge status-archived">${t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : '-'}</span>`}
+                            </div>
+                        </div>
+                        <div class="tourist-card-info">
+                            <div class="tourist-card-field">
+                                <strong>Contact Number</strong>
+                                <span>${t.contact_number || '-'}</span>
+                            </div>
+                            <div class="tourist-card-field">
+                                <strong>Address</strong>
+                                <span>${t.address || '-'}</span>
+                            </div>
+                            <div class="tourist-card-field">
+                                <strong>Homestay</strong>
+                                <span>${t.homestay__name || '-'}</span>
+                            </div>
+                            <div class="tourist-card-field">
+                                <strong>Date of Arrival</strong>
+                                <span>${t.date_arrival || t.date || '-'}</span>
+                            </div>
+                            <div class="tourist-card-field">
+                                <strong>Date of Departure</strong>
+                                <span>${t.date_departure || '-'}</span>
+                            </div>
+                            <div class="tourist-card-field">
+                                <strong>No. of Guests</strong>
+                                <span>${t.num_people || '-'}</span>
+                            </div>
+                        </div>
+                    `;
+                    mobileCards.appendChild(card);
+                }
             });
         } catch (err) {
             tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error loading data.</td></tr>';
+            if (mobileCards && window.innerWidth <= 576) {
+                mobileCards.innerHTML = '<div style="text-align:center;color:red;padding:20px;">Error loading data.</div>';
+            } else if (mobileCards) {
+                mobileCards.innerHTML = '';
+            }
             if (touristCountDiv) touristCountDiv.textContent = '-';
         }
     }
-    document.addEventListener('DOMContentLoaded', loadTouristTableAndDashboard);
+    // Initialize responsive behavior and load data
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ensure mobile cards are properly hidden on page load for desktop
+        const mobileCards = document.getElementById('tourist-mobile-cards');
+        if (mobileCards && window.innerWidth > 576) {
+            mobileCards.innerHTML = '';
+            mobileCards.style.display = 'none';
+        }
+        
+        loadTouristTableAndDashboard();
+    });
 
     // AJAX Tourist Registration
     // Mobile menu functionality
@@ -2683,16 +3052,46 @@
         function searchTourists() {
             const q = document.getElementById('tourist-search').value.trim();
             const tbody = document.getElementById('tourist-table-body');
+            const mobileCards = document.getElementById('tourist-mobile-cards');
+            
             tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;">Searching...</td></tr>';
+            if (mobileCards && window.innerWidth <= 576) {
+                mobileCards.innerHTML = '<div style="text-align:center;color:#888;padding:20px;">Searching...</div>';
+            } else if (mobileCards) {
+                mobileCards.innerHTML = '';
+            }
+            
+            // If search is empty, reload all data
+            if (!q) {
+                loadTouristTableAndDashboard();
+                return;
+            }
+            
             fetch(`/api/tourist-search/?q=${encodeURIComponent(q)}`)
                 .then(r => r.json())
                 .then(data => {
                     if (!Array.isArray(data) || data.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;">No tourists found.</td></tr>';
+                        if (mobileCards && window.innerWidth <= 576) {
+                            mobileCards.innerHTML = '<div style="text-align:center;color:#888;padding:40px;">No tourists found.</div>';
+                        } else if (mobileCards) {
+                            mobileCards.innerHTML = '';
+                        }
                         return;
                     }
+                    
                     tbody.innerHTML = '';
+                    // Clear mobile cards for desktop, prepare for mobile
+                    if (mobileCards) {
+                        if (window.innerWidth <= 576) {
+                            mobileCards.innerHTML = ''; // Clear to prepare for new search data
+                        } else {
+                            mobileCards.innerHTML = ''; // Keep empty on desktop
+                        }
+                    }
+                    
                     data.forEach(t => {
+                        // Create table row
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td>${t.guest_name || '-'}</td>
@@ -2705,11 +3104,68 @@
                             <td>${t.status === 'reserved' ? '<span class="status-badge status-reserved">Reserved</span>' : t.status === 'available' ? '<span class="status-badge status-available">Available</span>' : `<span class="status-badge status-archived">${t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : '-'}</span>`}</td>
                         `;
                         tbody.appendChild(tr);
+                        
+                        // Create mobile card (only populate on mobile devices)
+                        if (mobileCards && window.innerWidth <= 576) {
+                            const card = document.createElement('div');
+                            card.className = 'tourist-card';
+                            card.innerHTML = `
+                                <div class="tourist-card-header">
+                                    <h3 class="tourist-card-name">${t.guest_name || 'Unknown'}</h3>
+                                    <div class="tourist-card-status">
+                                        ${t.status === 'reserved' ? '<span class="status-badge status-reserved">Reserved</span>' :
+                                          t.status === 'available' ? '<span class="status-badge status-available">Available</span>' :
+                                          `<span class="status-badge status-archived">${t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : '-'}</span>`}
+                                    </div>
+                                </div>
+                                <div class="tourist-card-info">
+                                    <div class="tourist-card-field">
+                                        <strong>Contact Number</strong>
+                                        <span>${t.contact_number || '-'}</span>
+                                    </div>
+                                    <div class="tourist-card-field">
+                                        <strong>Address</strong>
+                                        <span>${t.address || '-'}</span>
+                                    </div>
+                                    <div class="tourist-card-field">
+                                        <strong>Homestay</strong>
+                                        <span>${t.homestay__name || '-'}</span>
+                                    </div>
+                                    <div class="tourist-card-field">
+                                        <strong>Date of Arrival</strong>
+                                        <span>${t.date_arrival || t.date || '-'}</span>
+                                    </div>
+                                    <div class="tourist-card-field">
+                                        <strong>Date of Departure</strong>
+                                        <span>${t.date_departure || '-'}</span>
+                                    </div>
+                                    <div class="tourist-card-field">
+                                        <strong>No. of Guests</strong>
+                                        <span>${t.num_people || '-'}</span>
+                                    </div>
+                                </div>
+                            `;
+                            mobileCards.appendChild(card);
+                        }
                     });
                 })
                 .catch(err => {
                     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error searching tourists.</td></tr>';
+                    if (mobileCards && window.innerWidth <= 576) {
+                        mobileCards.innerHTML = '<div style="text-align:center;color:red;padding:20px;">Error searching tourists.</div>';
+                    } else if (mobileCards) {
+                        mobileCards.innerHTML = '';
+                    }
                 });
+        }
+
+        function clearTouristSearch() {
+            const searchInput = document.getElementById('tourist-search');
+            const clearBtn = document.getElementById('clear-search-btn');
+            
+            searchInput.value = '';
+            if (clearBtn) clearBtn.style.display = 'none';
+            loadTouristTableAndDashboard();
         }
 
         function logout() {
@@ -3172,12 +3628,22 @@
     function handleResponsiveLayout() {
         const sidebar = document.querySelector('.sidebar');
         const mobileOverlay = document.getElementById('mobile-overlay');
+        const mobileCards = document.getElementById('tourist-mobile-cards');
         
         if (window.innerWidth > 768) {
             sidebar.classList.remove('mobile-open');
             mobileOverlay.classList.remove('active');
             mobileOverlay.style.display = 'none';
             document.body.classList.remove('mobile-menu-open');
+        }
+        
+        // Clear mobile cards if on desktop view (ensure they stay hidden)
+        if (window.innerWidth > 576 && mobileCards) {
+            mobileCards.innerHTML = '';
+            mobileCards.style.display = 'none';
+        } else if (window.innerWidth <= 576 && mobileCards) {
+            // On mobile, reload data to populate cards properly
+            loadTouristTableAndDashboard();
         }
     }
 
@@ -3221,9 +3687,17 @@
         }
         // Live search: debounced input handlers
         const touristInput = document.getElementById('tourist-search');
+        const clearSearchBtn = document.getElementById('clear-search-btn');
+        
         if (touristInput) {
             const debouncedTouristSearch = debounce(() => {
                 const q = touristInput.value.trim();
+                
+                // Show/hide clear button
+                if (clearSearchBtn) {
+                    clearSearchBtn.style.display = q ? 'block' : 'none';
+                }
+                
                 if (!q) {
                     // If cleared, reload full table
                     loadTouristTableAndDashboard();
@@ -3231,7 +3705,16 @@
                     searchTourists();
                 }
             }, 250);
+            
             touristInput.addEventListener('input', debouncedTouristSearch);
+            
+            // Enter key support
+            touristInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchTourists();
+                }
+            });
         }
 
         const homestayInput = document.getElementById('homestay-search');
