@@ -28,7 +28,7 @@
             --border-radius: 8px;
             --border-radius-lg: 12px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    // removed extra closing brace that caused SyntaxError
+            }
 
         * {
             box-sizing: border-box;
@@ -40,7 +40,7 @@
             padding: 0;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             display: flex;
-            height: 100vh;
+            min-height: 100vh;
             font-weight: 400;
             line-height: 1.6;
             color: var(--text-dark);
@@ -88,6 +88,73 @@
             margin-right: 20px;
             position: relative;
             overflow: hidden;
+        /* Responsive calendar container */
+        #calendar-availability {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 8px;
+        }
+
+        .custom-calendar {
+            width: 100%;
+            min-width: 360px; /* allow horizontal scrolling on very small screens */
+            border-collapse: collapse;
+            table-layout: fixed;
+            background: transparent;
+        }
+
+        .custom-calendar th, .custom-calendar td {
+            padding: 6px 8px;
+            vertical-align: top;
+            border: 0;
+        }
+
+        .calendar-date-label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-dark);
+        }
+
+        .calendar-room {
+            display: inline-block;
+            box-sizing: border-box;
+            width: calc(33% - 8px);
+            max-width: 100%;
+            margin: 6px 4px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* Make room buttons full-width on small screens */
+        @media (max-width: 576px) {
+            .custom-calendar {
+                min-width: 520px; /* allow horizontal scrolling for month grid */
+            }
+            .calendar-room {
+                width: 100%;
+                display: block;
+                margin: 6px 0;
+                font-size: 15px;
+                padding: 10px 12px;
+            }
+            .calendar-date-label { margin-bottom: 10px; }
+            /* Make reservation modal full-screen on small devices */
+            #reservation-modal > div {
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+                max-width: 100vw;
+                max-height: 100vh;
+                overflow: auto;
+            }
+            /* Ensure nav buttons are easier to tap */
+            .calendar-nav-btn { padding: 8px 12px; }
+        }
         }
 
         .sidebar-menu a::before {
@@ -132,7 +199,9 @@
             margin-left: 280px;
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            /* allow content to grow naturally on mobile */
+            height: auto;
+            min-height: 100vh;
             transition: var(--transition);
         }
 
@@ -588,6 +657,9 @@
             padding: 8px;
             border-radius: var(--border-radius);
             transition: var(--transition);
+            /* ensure toggle sits above other page content so it's always clickable */
+            position: relative;
+            z-index: 11002;
         }
 
         .mobile-menu-toggle:hover {
@@ -606,10 +678,13 @@
             z-index: 999;
             opacity: 0;
             transition: var(--transition);
+            pointer-events: none; /* don't intercept by default */
         }
 
         .mobile-overlay.active {
             opacity: 1;
+            display: block;
+            pointer-events: auto; /* allow overlay to receive taps/clicks when active */
         }
 
         /* Mobile-specific improvements */
@@ -2842,6 +2917,7 @@ async function deleteRoom(iconElem, roomId) {
         // Show reservation details modal
         function showReservationDetailsModal({guest, numPeople, contact, date, room}) {
             const modal = document.createElement('div');
+            modal.className = 'details-modal';
             modal.style.position = 'fixed';
             modal.style.top = '0';
             modal.style.left = '0';
@@ -2854,7 +2930,7 @@ async function deleteRoom(iconElem, roomId) {
             modal.style.justifyContent = 'center';
             modal.innerHTML = `
                 <div style="background:#fff;padding:2rem 2.5rem;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.18);min-width:320px;max-width:90vw;position:relative;">
-                    <button onclick="this.closest('div[style]').parentNode.remove()" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:1.5rem;color:#888;cursor:pointer;">&times;</button>
+                    <button onclick="this.closest('.details-modal').remove()" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:1.5rem;color:#888;cursor:pointer;">&times;</button>
                     <h3 style="margin-top:0;">Reservation Details</h3>
                     <div style="margin-bottom:1rem;"><b>Date:</b> ${date}</div>
                     <div style="margin-bottom:1rem;"><b>Room:</b> ${room}</div>
@@ -3112,6 +3188,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 mobileMenuToggle.addEventListener('click', function() {
                     toggleMobileMenu();
                 });
+                // also listen for touchstart to ensure immediate response on touch devices
+                mobileMenuToggle.addEventListener('touchstart', function(e) {
+                    // prevent synthetic mouse events from interfering
+                    try { e.preventDefault(); } catch (err) {}
+                    console.debug('[DEBUG] mobile-menu touchstart received');
+                    // Try normal toggle first
+                    try { toggleMobileMenu(); } catch (err) { console.warn('toggle failed', err); }
+                    // If sidebar not open after toggle (something intercepts), force it open
+                    setTimeout(function() {
+                        const sidebar = document.querySelector('.sidebar');
+                        if (!sidebar.classList.contains('mobile-open')) {
+                            console.debug('[DEBUG] forcing sidebar open');
+                            ensureSidebarOpen();
+                        }
+                    }, 60);
+                }, {passive: false});
             }
             
             if (mobileOverlay) {
@@ -3135,7 +3227,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.querySelector('.sidebar');
             const mobileOverlay = document.getElementById('mobile-overlay');
             const toggleIcon = document.querySelector('.mobile-menu-toggle i');
-            
+            // Close any open reservation/detail modals so they don't intercept clicks
+            try {
+                // hide built-in reservation modal if visible
+                const resModal = document.getElementById('reservation-modal');
+                if (resModal) resModal.style.display = 'none';
+                // remove dynamically created detail modals added by showReservationDetailsModal
+                document.querySelectorAll('.details-modal').forEach(m => m.remove());
+            } catch (err) { console.warn('Error closing modals before opening sidebar:', err); }
+
             sidebar.classList.toggle('mobile-open');
             mobileOverlay.classList.toggle('active');
             
@@ -3147,6 +3247,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 toggleIcon.classList.remove('fa-times');
                 toggleIcon.classList.add('fa-bars');
                 document.body.classList.remove('mobile-menu-open');
+            }
+        }
+
+        // Force-open helper: sets classes directly to avoid relying on event timing
+        function ensureSidebarOpen() {
+            const sidebar = document.querySelector('.sidebar');
+            const mobileOverlay = document.getElementById('mobile-overlay');
+            const toggleIcon = document.querySelector('.mobile-menu-toggle i');
+            if (!sidebar.classList.contains('mobile-open')) {
+                sidebar.classList.add('mobile-open');
+                mobileOverlay.classList.add('active');
+                if (toggleIcon) { toggleIcon.classList.remove('fa-bars'); toggleIcon.classList.add('fa-times'); }
+                document.body.classList.add('mobile-menu-open');
             }
         }
         

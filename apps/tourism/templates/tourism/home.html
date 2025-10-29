@@ -1242,27 +1242,168 @@
             transform: translateX(3px);
         }
 
+        /* Mobile hamburger menu styles */
+        .mobile-menu-toggle {
+            display: none;
+            flex-direction: column;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: var(--transition);
+            z-index: 1001;
+        }
+
+        .mobile-menu-toggle span {
+            width: 25px;
+            height: 3px;
+            background: var(--white);
+            margin: 3px 0;
+            border-radius: 2px;
+            transition: var(--transition);
+            display: block;
+        }
+
+        .mobile-menu-toggle:hover span {
+            background: var(--accent-color);
+        }
+
+        .mobile-menu-toggle.active span:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+
+        .mobile-menu-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-toggle.active span:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
+        }
+
+        /* Mobile navigation menu */
+        .mobile-nav-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            padding: 80px 0 2rem 0;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            box-shadow: -4px 0 15px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .mobile-nav-menu.active {
+            right: 0;
+        }
+
+        .mobile-nav-menu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .mobile-nav-menu li {
+            margin: 0;
+        }
+
+        .mobile-nav-menu a {
+            display: block;
+            color: var(--white);
+            text-decoration: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: var(--transition);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .mobile-nav-menu a:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--accent-color);
+            padding-left: 2.5rem;
+        }
+
+        .mobile-login-item {
+            padding: 2rem;
+        }
+
+        .mobile-login-btn {
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
+            color: var(--white);
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 1rem 2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .mobile-login-btn:hover {
+            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.2));
+            transform: translateY(-2px);
+        }
+
+        /* Mobile overlay */
+        .mobile-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .mobile-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
         /* ===========================================
            RESPONSIVE DESIGN - Enhanced Mobile
            =========================================== */
         @media (max-width: 768px) {
             .nav-container {
-                grid-template-columns: 1fr auto;
-                gap: 1rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0 1rem;
+                position: relative;
             }
             
             .nav-menu {
                 display: none;
             }
             
-            .logo {
-                font-size: 1.5rem;
+            .login-container {
+                display: none;
+            }
+
+            .mobile-menu-toggle {
+                display: flex;
+                position: absolute;
+                right: 1rem;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+
+            .mobile-nav-menu {
+                display: block;
             }
             
-            .login-btn {
-                padding: 0.8rem 1.5rem;
-                font-size: 0.9rem;
-                gap: 0.5rem;
+            .logo {
+                font-size: 1.4rem;
             }
             
             .login-btn .login-icon {
@@ -1398,48 +1539,77 @@
                     <span class="login-icon">👤</span>
                     <span>Log In</span>
                 </button>
-                <div id="loginModal" class="modal">
-                    <div class="modal-content">
-                        <button class="modal-close" onclick="closeModal('loginModal')">&times;</button>
-                        <h2 class="modal-title">🔐 Welcome Back</h2>
-                        <p style="color: var(--text-light); margin-bottom: 2rem; text-align: center;">Please sign in to your account</p>
-                        <form id="login-form" method="post" action="/login/" autocomplete="off">
-                            {% csrf_token %}
-                            <div class="form-group">
-                                <label class="form-label" for="login-username">👤 Username</label>
-                                <input class="form-input" type="text" id="login-username" name="username" placeholder="Enter your username" autocomplete="off" readonly required value="{{ login_username|default:'' }}">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="login-password">🔒 Password</label>
-                                <div class="input-with-icon">
-                                    <input class="form-input" type="password" id="login-password" name="password" placeholder="Enter your password" autocomplete="off" readonly required>
-                                    <button type="button" class="show-pass" data-target="login-password" aria-label="Show password">👁️</button>
-                                </div>
-                            </div>
-                            <!-- Login messages area: show either generic invalid or contact-admin after 4 fails -->
-                            <div id="login-messages" style="margin-top:12px;">
-                                {% comment %} Prefer server-side messages if present, but show a single message depending on failed attempts {% endcomment %}
-                                {% if failed_login_attempts and failed_login_attempts|default:0 >= 4 %}
-                                    <div style="color:#a94442; font-weight:600; font-size:0.95rem;">You have made multiple unsuccessful attempts. Please contact the admin or MTO staff for assistance.</div>
-                                {% else %}
-                                    {# Only display server messages here when the view explicitly flagged a login error #}
-                                    {% if login_error %}
-                                        {% for message in messages %}
-                                            <div style="color: #e74c3c; font-size:0.95rem; margin-bottom:6px;">{{ message }}</div>
-                                        {% endfor %}
-                                    {% endif %}
-                                {% endif %}
-                            </div>
-                            <button class="submit-btn" type="submit">
-                                <span>Sign In</span>
-                                <span style="margin-left: 8px;">→</span>
-                            </button>
-                        </form>
+            </div>
+
+            <!-- Mobile hamburger menu button -->
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle mobile menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+
+        <!-- Mobile overlay -->
+        <div class="mobile-overlay" onclick="closeMobileMenu()"></div>
+
+        <!-- Mobile navigation menu -->
+        <nav class="mobile-nav-menu" id="mobileNavMenu">
+            <ul>
+                <li><a href="#home" onclick="scrollToSection('home'); closeMobileMenu();">🏠 Home</a></li>
+                <li><a href="#homestay" onclick="scrollToSection('homestay'); closeMobileMenu();">🏡 Homestay</a></li>
+                <li><a href="#performance" onclick="scrollToSection('performance'); closeMobileMenu();">📊 Performance</a></li>
+                <li><a href="#destination" onclick="scrollToSection('destination'); closeMobileMenu();">🏖️ Destination</a></li>
+                <li><a href="#about" onclick="scrollToSection('footer'); closeMobileMenu();">ℹ️ About</a></li>
+                <li class="mobile-login-item">
+                    <button class="mobile-login-btn" onclick="openLoginModal(true); closeMobileMenu();">
+                        <span>👤</span>
+                        <span>Log In</span>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Login Modal (moved outside header to prevent mobile hiding) -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('loginModal')">&times;</button>
+            <h2 class="modal-title">🔐 Welcome Back</h2>
+            <p style="color: var(--text-light); margin-bottom: 2rem; text-align: center;">Please sign in to your account</p>
+            <form id="login-form" method="post" action="/login/" autocomplete="off">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label" for="login-username">👤 Username</label>
+                    <input class="form-input" type="text" id="login-username" name="username" placeholder="Enter your username" autocomplete="off" readonly required value="{{ login_username|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="login-password">🔒 Password</label>
+                    <div class="input-with-icon">
+                        <input class="form-input" type="password" id="login-password" name="password" placeholder="Enter your password" autocomplete="off" readonly required>
+                        <button type="button" class="show-pass" data-target="login-password" aria-label="Show password">👁️</button>
                     </div>
                 </div>
-            </div>
+                <!-- Login messages area: show either generic invalid or contact-admin after 4 fails -->
+                <div id="login-messages" style="margin-top:12px;">
+                    {% comment %} Prefer server-side messages if present, but show a single message depending on failed attempts {% endcomment %}
+                    {% if failed_login_attempts and failed_login_attempts|default:0 >= 4 %}
+                        <div style="color:#a94442; font-weight:600; font-size:0.95rem;">You have made multiple unsuccessful attempts. Please contact the admin or MTO staff for assistance.</div>
+                    {% else %}
+                        {# Only display server messages here when the view explicitly flagged a login error #}
+                        {% if login_error %}
+                            {% for message in messages %}
+                                <div style="color: #e74c3c; font-size:0.95rem; margin-bottom:6px;">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <button class="submit-btn" type="submit">
+                    <span>Sign In</span>
+                    <span style="margin-left: 8px;">→</span>
+                </button>
+            </form>
         </div>
-    </header>
+    </div>
 
     <!-- Enhanced Hero Section -->
     <section id="home" class="hero">
@@ -1608,6 +1778,46 @@
                 header.classList.add('scrolled');
             } else {
                 header.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile menu functionality
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileNavMenu');
+            const toggleButton = document.querySelector('.mobile-menu-toggle');
+            const overlay = document.querySelector('.mobile-overlay');
+            
+            if (mobileMenu && toggleButton && overlay) {
+                const isActive = mobileMenu.classList.contains('active');
+                
+                if (isActive) {
+                    closeMobileMenu();
+                } else {
+                    mobileMenu.classList.add('active');
+                    toggleButton.classList.add('active');
+                    overlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+        }
+
+        function closeMobileMenu() {
+            const mobileMenu = document.getElementById('mobileNavMenu');
+            const toggleButton = document.querySelector('.mobile-menu-toggle');
+            const overlay = document.querySelector('.mobile-overlay');
+            
+            if (mobileMenu && toggleButton && overlay) {
+                mobileMenu.classList.remove('active');
+                toggleButton.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Close mobile menu on escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeMobileMenu();
             }
         });
 
