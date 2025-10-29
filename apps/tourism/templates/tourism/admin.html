@@ -1882,23 +1882,47 @@
                 const result = await response.json();
                 console.log('Full API response:', result);
                 const tbody = document.getElementById('user-table-body');
+                const archiveTBody = document.getElementById('archive-table-body');
                 tbody.innerHTML = '';
+                archiveTBody.innerHTML = '';
+                
                 if (result.success && Array.isArray(result.users) && result.users.length > 0) {
-                    result.users.forEach((user, idx) => {
-                        const row = tbody.insertRow();
-                        row.innerHTML = `
-                            <td>${idx + 1}</td>
-                            <td>${user.homestayName}</td>
-                            <td>${user.ownerName}</td>
-                            <td>${user.address}</td>
-                            <td>${user.username}</td>
-                            <td>••••••••</td>
-                            <td><span class="status-badge status-${user.status.toLowerCase()}">${user.status}</span></td>
-                            <td class="action-icons">
-                                <i class="fas fa-edit edit-icon" title="Edit" onclick="editUser(this)"></i>
-                                <i class="fas fa-trash delete-icon" title="Delete" onclick="deleteUser(this)"></i>
-                            </td>
-                        `;
+                    let activeUserIndex = 1;
+                    let archivedUserIndex = 1;
+                    
+                    result.users.forEach((user) => {
+                        if (user.status && user.status.toLowerCase() === 'archived') {
+                            // Add to archive table
+                            const archiveRow = archiveTBody.insertRow();
+                            archiveRow.innerHTML = `
+                                <td>${archivedUserIndex++}</td>
+                                <td>${user.homestayName}</td>
+                                <td>${user.ownerName}</td>
+                                <td>${user.address}</td>
+                                <td>${user.username}</td>
+                                <td><span class="status-badge status-archived">Archived</span></td>
+                                <td>${user.archived_date || new Date().toLocaleDateString()}</td>
+                                <td class="action-icons">
+                                    <i class="fas fa-undo restore-icon" title="Restore" onclick="restoreUser(this)"></i>
+                                </td>
+                            `;
+                        } else {
+                            // Add to active users table
+                            const row = tbody.insertRow();
+                            row.innerHTML = `
+                                <td>${activeUserIndex++}</td>
+                                <td>${user.homestayName}</td>
+                                <td>${user.ownerName}</td>
+                                <td>${user.address}</td>
+                                <td>${user.username}</td>
+                                <td>••••••••</td>
+                                <td><span class="status-badge status-${user.status.toLowerCase()}">${user.status}</span></td>
+                                <td class="action-icons">
+                                    <i class="fas fa-edit edit-icon" title="Edit" onclick="editUser(this)"></i>
+                                    <i class="fas fa-trash delete-icon" title="Delete" onclick="deleteUser(this)"></i>
+                                </td>
+                            `;
+                        }
                     });
                 } else if (result.success && Array.isArray(result.users) && result.users.length === 0) {
                     const emptyRow = document.createElement('tr');
@@ -1909,6 +1933,9 @@
                     errorRow.innerHTML = `<td colspan="8" style="text-align:center; color:#c00; font-style:italic;">Error loading users: ${result.error || 'Unknown error'}</td>`;
                     tbody.appendChild(errorRow);
                 }
+                
+                // Check if archive is empty and show message
+                checkArchiveEmpty();
                 updateDashboardStats && updateDashboardStats();
                 renderManageUserTable && renderManageUserTable();
                 // Render MTO staff/admin accounts if present
@@ -2453,64 +2480,140 @@
         }
 
         function deleteUser(icon) {
-            // Remove alert
             const row = icon.closest('tr');
             const cells = row.cells;
-            // Move to archive
-            const archiveTableBody = document.getElementById('archive-table-body');
-            // Remove empty message if it exists
-            const emptyMessage = archiveTableBody.querySelector('.empty-message');
-            if (emptyMessage) {
-                emptyMessage.remove();
+            const username = cells[4].textContent;
+            
+            // Confirm archive action
+            if (!confirm(`Are you sure you want to archive user: ${username}?`)) {
+                return;
             }
-            const archiveRow = archiveTableBody.insertRow();
-            const currentDate = new Date().toLocaleDateString();
-            archiveRow.innerHTML = `
-                <td>${cells[0].textContent}</td>
-                <td>${cells[1].textContent}</td>
-                <td>${cells[2].textContent}</td>
-                <td>${cells[3].textContent}</td>
-                <td>${cells[4].textContent}</td>
-                <td><span class="status-badge status-archived">Archived</span></td>
-                <td>${currentDate}</td>
-                <td class="action-icons">
-                    <i class="fas fa-undo restore-icon" title="Restore" onclick="restoreUser(this)"></i>
-                </td>
-            `;
-            // Remove from active users
-            row.remove();
-            updateUserCount();
-            updateDashboardStats();
-            renderManageUserTable();
+
+            // Prepare user data for archiving
+            const userData = {
+                username: username,
+                homestayName: cells[1].textContent,
+                ownerName: cells[2].textContent,
+                address: cells[3].textContent,
+                status: 'Archived'
+            };
+
+            const csrftoken = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '';
+            
+            // Send archive request to backend
+            fetch('/api/edit_homestay_user/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(userData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    // Move to archive table in UI
+                    const archiveTableBody = document.getElementById('archive-table-body');
+                    // Remove empty message if it exists
+                    const emptyMessage = archiveTableBody.querySelector('.empty-message');
+                    if (emptyMessage) {
+                        emptyMessage.remove();
+                    }
+                    const archiveRow = archiveTableBody.insertRow();
+                    const currentDate = new Date().toLocaleDateString();
+                    archiveRow.innerHTML = `
+                        <td>${cells[0].textContent}</td>
+                        <td>${cells[1].textContent}</td>
+                        <td>${cells[2].textContent}</td>
+                        <td>${cells[3].textContent}</td>
+                        <td>${cells[4].textContent}</td>
+                        <td><span class="status-badge status-archived">Archived</span></td>
+                        <td>${currentDate}</td>
+                        <td class="action-icons">
+                            <i class="fas fa-undo restore-icon" title="Restore" onclick="restoreUser(this)"></i>
+                        </td>
+                    `;
+                    // Remove from active users
+                    row.remove();
+                    updateUserCount();
+                    updateDashboardStats();
+                    renderManageUserTable();
+                    alert('User successfully archived!');
+                } else {
+                    alert('Error archiving user: ' + (result.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Archive error:', error);
+                alert('Error archiving user. Please try again.');
+            });
         }
 
         function restoreUser(icon) {
-            // Remove alert
             const row = icon.closest('tr');
             const cells = row.cells;
-            // Move back to active users
-            const userTableBody = document.getElementById('user-table-body');
-            const userRow = userTableBody.insertRow();
-            userRow.innerHTML = `
-                <td>${cells[0].textContent}</td>
-                <td>${cells[1].textContent}</td>
-                <td>${cells[2].textContent}</td>
-                <td>${cells[3].textContent}</td>
-                <td>${cells[4].textContent}</td>
-                <td>••••••••</td>
-                <td><span class="status-badge status-active">Active</span></td>
-                <td class="action-icons">
-                    <i class="fas fa-edit edit-icon" title="Edit" onclick="editUser(this)"></i>
-                    <i class="fas fa-trash delete-icon" title="Delete" onclick="deleteUser(this)"></i>
-                </td>
-            `;
-            // Remove from archive
-            row.remove();
-            updateUserCount();
-            updateDashboardStats();
-            renderManageUserTable();
-            // Check if archive is now empty
-            checkArchiveEmpty();
+            const username = cells[4].textContent;
+            
+            // Confirm restore action
+            if (!confirm(`Are you sure you want to restore user: ${username}?`)) {
+                return;
+            }
+
+            // Prepare user data for restoring
+            const userData = {
+                username: username,
+                homestayName: cells[1].textContent,
+                ownerName: cells[2].textContent,
+                address: cells[3].textContent,
+                status: 'Active'
+            };
+
+            const csrftoken = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '';
+            
+            // Send restore request to backend
+            fetch('/api/edit_homestay_user/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(userData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    // Move back to active users table in UI
+                    const userTableBody = document.getElementById('user-table-body');
+                    const userRow = userTableBody.insertRow();
+                    userRow.innerHTML = `
+                        <td>${cells[0].textContent}</td>
+                        <td>${cells[1].textContent}</td>
+                        <td>${cells[2].textContent}</td>
+                        <td>${cells[3].textContent}</td>
+                        <td>${cells[4].textContent}</td>
+                        <td>••••••••</td>
+                        <td><span class="status-badge status-active">Active</span></td>
+                        <td class="action-icons">
+                            <i class="fas fa-edit edit-icon" title="Edit" onclick="editUser(this)"></i>
+                            <i class="fas fa-trash delete-icon" title="Delete" onclick="deleteUser(this)"></i>
+                        </td>
+                    `;
+                    // Remove from archive
+                    row.remove();
+                    updateUserCount();
+                    updateDashboardStats();
+                    renderManageUserTable();
+                    // Check if archive is now empty
+                    checkArchiveEmpty();
+                    alert('User successfully restored!');
+                } else {
+                    alert('Error restoring user: ' + (result.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Restore error:', error);
+                alert('Error restoring user. Please try again.');
+            });
         }
 
         function exportUsers() {
