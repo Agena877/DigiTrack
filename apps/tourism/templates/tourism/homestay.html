@@ -3089,6 +3089,114 @@ document.addEventListener('DOMContentLoaded', function() {
             border-color: #0077B6;
             outline: none;
         }
+        
+        /* Date Availability Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            #date-availability h2 {
+                font-size: 1.5rem;
+                text-align: center;
+                margin-bottom: 16px;
+            }
+            
+            #date-availability > div {
+                padding: 1.5rem !important;
+                margin: 0 -20px;
+                border-radius: 0 !important;
+            }
+            
+            .calendar-center-selectors {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+            }
+            
+            .calendar-center-label {
+                font-size: 0.9rem;
+                white-space: nowrap;
+            }
+            
+            .calendar-center-select {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+                min-width: 100px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            #date-availability h2 {
+                font-size: 1.3rem;
+            }
+            
+            #date-availability > div {
+                padding: 1rem !important;
+            }
+            
+            #date-availability > div > div:first-child {
+                margin-bottom: 1rem !important;
+            }
+            
+            #date-availability > div > div:first-child > div {
+                position: static !important;
+                flex-direction: column;
+                gap: 12px;
+                min-height: auto !important;
+            }
+            
+            #date-availability > div > div:first-child > div > div:first-child,
+            #date-availability > div > div:first-child > div > div:last-child {
+                position: static !important;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .calendar-center-selectors {
+                width: 100%;
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .calendar-center-label {
+                text-align: center;
+                font-size: 1rem;
+                margin-bottom: 4px;
+            }
+            
+            .calendar-center-select {
+                width: 100%;
+                max-width: 200px;
+                padding: 10px 16px;
+                font-size: 1rem;
+                text-align: center;
+            }
+            
+            .calendar-nav-btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+                min-width: 80px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #date-availability h2 {
+                font-size: 1.2rem;
+            }
+            
+            #date-availability > div {
+                padding: 0.8rem !important;
+            }
+            
+            .calendar-center-select {
+                max-width: 180px;
+                font-size: 0.9rem;
+                padding: 8px 12px;
+            }
+            
+            .calendar-nav-btn {
+                padding: 8px 16px;
+                font-size: 0.8rem;
+                min-width: 70px;
+            }
+        }
         </style>
                             <!-- Right: Next and Today buttons in red box position -->
                             <div style="position:absolute; right:0; top:0; height:100%; display:flex; align-items:center; gap:8px;">
@@ -3121,6 +3229,152 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div id="calendar-availability"></div>
                     <style>
+                    /* FullCalendar Base Styles */
+                    #calendar-availability {
+                        width: 100%;
+                        overflow-x: auto;
+                        -webkit-overflow-scrolling: touch;
+                        border-radius: 8px;
+                    }
+                    
+                    .fc {
+                        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    }
+                    
+                    .fc-theme-standard td,
+                    .fc-theme-standard th {
+                        border: 1px solid var(--border-color);
+                    }
+                    
+                    .fc-daygrid-day {
+                        min-height: 120px;
+                    }
+                    
+                    .fc-daygrid-day-number {
+                        font-weight: 600;
+                        color: var(--text-dark);
+                        padding: 8px;
+                        font-size: 14px;
+                    }
+                    
+                    .fc-day-today {
+                        background: rgba(0, 119, 182, 0.1) !important;
+                    }
+                    
+                    .fc-event {
+                        border-radius: 4px;
+                        padding: 3px 6px;
+                        margin: 1px;
+                        font-size: 11px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        border: none !important;
+                        text-align: center;
+                        min-width: 32px;
+                        line-height: 1.2;
+                    }
+                    
+                    .fc-event:hover {
+                        opacity: 0.9;
+                        transform: scale(1.05);
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                    }
+                    
+                    .fc-daygrid-event {
+                        margin: 1px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                    
+                    .fc-event-title {
+                        font-weight: 700;
+                        font-size: inherit;
+                    }
+                    
+                    .fc-col-header-cell {
+                        padding: 8px 4px;
+                        font-weight: 600;
+                        background: var(--primary-light);
+                        font-size: 13px;
+                    }
+                    
+                    /* Mobile Responsive FullCalendar Styles */
+                    @media (max-width: 768px) {
+                        .fc-daygrid-day {
+                            min-height: 100px;
+                        }
+                        
+                        .fc-daygrid-day-number {
+                            font-size: 12px;
+                            padding: 6px;
+                        }
+                        
+                        .fc-event {
+                            font-size: 10px;
+                            padding: 2px 4px;
+                            min-width: 28px;
+                        }
+                        
+                        .fc-col-header-cell {
+                            font-size: 12px;
+                            padding: 6px 2px;
+                        }
+                    }
+                    
+                    @media (max-width: 576px) {
+                        #calendar-availability {
+                            margin: 0 -10px;
+                        }
+                        
+                        .fc-daygrid-day {
+                            min-height: 80px;
+                        }
+                        
+                        .fc-daygrid-day-number {
+                            font-size: 11px;
+                            padding: 4px;
+                        }
+                        
+                        .fc-event {
+                            font-size: 9px;
+                            padding: 1px 3px;
+                            min-width: 24px;
+                            margin: 0.5px;
+                        }
+                        
+                        .fc-col-header-cell {
+                            font-size: 11px;
+                            padding: 4px 1px;
+                        }
+                        
+                        .fc-daygrid-event {
+                            margin: 0.5px;
+                        }
+                    }
+                    
+                    @media (max-width: 480px) {
+                        .fc-daygrid-day {
+                            min-height: 70px;
+                        }
+                        
+                        .fc-daygrid-day-number {
+                            font-size: 10px;
+                            padding: 3px;
+                        }
+                        
+                        .fc-event {
+                            font-size: 8px;
+                            padding: 1px 2px;
+                            min-width: 20px;
+                        }
+                        
+                        .fc-col-header-cell {
+                            font-size: 10px;
+                            padding: 3px 1px;
+                        }
+                    }
+                    
                     .custom-calendar {
                         width: 100%;
                         border-collapse: collapse;
@@ -3216,17 +3470,137 @@ document.addEventListener('DOMContentLoaded', function() {
                             </script>
                         </div>
                     </div>
-                    <div id="calendar-legend" style="margin-top:1rem;">
-                        <span style="display:inline-block;width:16px;height:16px;background:#27ae60;border-radius:4px;margin-right:6px;vertical-align:middle;"></span>
-                        <span style="vertical-align:middle;">Available</span>
-                        <span style="display:inline-block;width:16px;height:16px;background:#e74c3c;border-radius:4px;margin-left:16px;margin-right:6px;vertical-align:middle;"></span>
-                        <span style="vertical-align:middle;">Reserved</span>
-                        <span style="display:inline-block;width:16px;height:16px;background:#95a5a6;border-radius:4px;margin-left:16px;margin-right:6px;vertical-align:middle;"></span>
-                        <span style="vertical-align:middle;">Maintenance</span>
+                    <div id="calendar-legend" class="calendar-legend">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background:#27ae60;"></span>
+                            <span class="legend-text">Available</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background:#e74c3c;"></span>
+                            <span class="legend-text">Reserved</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background:#95a5a6;"></span>
+                            <span class="legend-text">Maintenance</span>
+                        </div>
                     </div>
-                    <div style="margin-top:1rem;color:#666;font-size:14px;">
+                    <div class="calendar-instructions">
                         <b>Instructions:</b> Click a date to edit its status. Reserved dates show guest name and number of people.
                     </div>
+                    
+                    <style>
+                    /* Calendar Legend Responsive Styles */
+                    .calendar-legend {
+                        margin-top: 1rem;
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 16px;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 16px;
+                        background: var(--light-bg);
+                        border-radius: 8px;
+                        border: 1px solid var(--border-color);
+                    }
+                    
+                    .legend-item {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        white-space: nowrap;
+                    }
+                    
+                    .legend-color {
+                        display: inline-block;
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 4px;
+                        flex-shrink: 0;
+                    }
+                    
+                    .legend-text {
+                        font-weight: 500;
+                        color: var(--text-dark);
+                        font-size: 14px;
+                    }
+                    
+                    .calendar-instructions {
+                        margin-top: 1rem;
+                        color: #666;
+                        font-size: 14px;
+                        text-align: center;
+                        padding: 12px;
+                        background: var(--white);
+                        border-radius: 8px;
+                        border: 1px solid var(--border-color);
+                        line-height: 1.5;
+                    }
+                    
+                    /* Mobile styles for calendar legend and instructions */
+                    @media (max-width: 768px) {
+                        .calendar-legend {
+                            padding: 12px;
+                            gap: 12px;
+                        }
+                        
+                        .legend-color {
+                            width: 18px;
+                            height: 18px;
+                        }
+                        
+                        .legend-text {
+                            font-size: 13px;
+                        }
+                        
+                        .calendar-instructions {
+                            font-size: 13px;
+                            padding: 10px;
+                        }
+                    }
+                    
+                    @media (max-width: 576px) {
+                        .calendar-legend {
+                            flex-direction: column;
+                            gap: 10px;
+                            padding: 10px;
+                        }
+                        
+                        .legend-item {
+                            justify-content: center;
+                            width: 100%;
+                        }
+                        
+                        .legend-color {
+                            width: 20px;
+                            height: 20px;
+                        }
+                        
+                        .legend-text {
+                            font-size: 14px;
+                        }
+                        
+                        .calendar-instructions {
+                            font-size: 12px;
+                            padding: 8px;
+                        }
+                    }
+                    
+                    @media (max-width: 480px) {
+                        .calendar-legend {
+                            padding: 8px;
+                            gap: 8px;
+                        }
+                        
+                        .legend-text {
+                            font-size: 13px;
+                        }
+                        
+                        .calendar-instructions {
+                            font-size: 11px;
+                            padding: 6px;
+                        }
+                    }
+                    </style>
                 </div>
             </div>
         </div>
