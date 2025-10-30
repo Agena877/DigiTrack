@@ -542,6 +542,60 @@
             letter-spacing: 0.5px;
         }
         
+        /* Trend interpretation styles for dashboard stats */
+        .trend-interpretation {
+            margin-top: 12px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .trend-icon i {
+            font-size: 14px;
+            background: none !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            -webkit-background-clip: unset !important;
+            -webkit-text-fill-color: unset !important;
+            background-clip: unset !important;
+        }
+
+        .trend-interpretation.trend-up .trend-icon i {
+            color: var(--success-color);
+        }
+
+        .trend-interpretation.trend-down .trend-icon i {
+            color: var(--danger-color);
+        }
+
+        .trend-interpretation.trend-stable .trend-icon i {
+            color: var(--secondary-color);
+        }
+
+        .trend-text {
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .trend-interpretation.trend-up .trend-text {
+            color: var(--success-color);
+        }
+
+        .trend-interpretation.trend-down .trend-text {
+            color: var(--danger-color);
+        }
+
+        .trend-interpretation.trend-stable .trend-text {
+            color: var(--secondary-color);
+        }
+
+        .trend-percentage {
+            font-weight: 700;
+            font-size: 12px;
+        }
+        
         .homestay-list-container {
             background: var(--white);
             padding: 32px;
@@ -2144,6 +2198,27 @@
                 font-size: 12px;
             }
             
+            /* Mobile styles for trend interpretation */
+            .trend-interpretation {
+                margin-top: 8px;
+                font-size: 10px;
+                gap: 4px;
+            }
+            
+            .trend-text {
+                font-size: 9px;
+            }
+            
+            .trend-icon i {
+                font-size: 11px;
+                background: none !important;
+                padding: 0 !important;
+                border-radius: 0 !important;
+                -webkit-background-clip: unset !important;
+                -webkit-text-fill-color: unset !important;
+                background-clip: unset !important;
+            }
+            
             .homestay-list-container {
                 padding: 16px 12px;
                 margin-bottom: 16px;
@@ -2896,6 +2971,15 @@
                             <i class="fas fa-users"></i>
                             <div class="number" id="tourist-count"></div>
                             <div class="label">Total Tourists</div>
+                            <!-- Daily percentage change interpretation -->
+                            <div id="tourist-trend-interpretation" class="trend-interpretation" style="display: none;">
+                                <div class="trend-icon" id="trend-icon">
+                                    <i class="fas fa-arrow-up"></i>
+                                </div>
+                                <div class="trend-text" id="trend-text">
+                                    Loading trend...
+                                </div>
+                            </div>
                         </div>
                         <div class="stat-card">
                             <i class="fas fa-home"></i>
@@ -3034,6 +3118,9 @@
             }
             if (touristCountDiv) touristCountDiv.textContent = totalGuests;
             
+            // Calculate and display daily percentage change
+            await calculateDailyTouristTrend(data);
+            
             // Handle empty data
             if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;">No tourists found.</td></tr>';
@@ -3144,6 +3231,132 @@
             if (touristCountDiv) touristCountDiv.textContent = '-';
         }
     }
+
+    // Calculate daily tourist trend and display percentage change
+    async function calculateDailyTouristTrend(touristData) {
+        const interpretationDiv = document.getElementById('tourist-trend-interpretation');
+        const trendIcon = document.getElementById('trend-icon');
+        const trendText = document.getElementById('trend-text');
+        
+        if (!interpretationDiv || !trendIcon || !trendText || !Array.isArray(touristData)) {
+            return;
+        }
+        
+        try {
+            // Group tourists by date (using date_arrival or date field)
+            const touristsByDate = {};
+            let today = new Date();
+            let yesterday = new Date();
+            yesterday.setDate(today.getDate() - 1);
+            
+            // Format dates for comparison (YYYY-MM-DD)
+            const todayStr = today.toISOString().split('T')[0];
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+            
+            // Count tourists for today and yesterday
+            let todayCount = 0;
+            let yesterdayCount = 0;
+            
+            touristData.forEach(tourist => {
+                const arrivalDate = tourist.date_arrival || tourist.date;
+                if (arrivalDate) {
+                    // Convert date to YYYY-MM-DD format if needed
+                    let dateStr = arrivalDate;
+                    
+                    // Handle different date formats
+                    if (arrivalDate.includes('/')) {
+                        // Convert MM/DD/YYYY or DD/MM/YYYY to YYYY-MM-DD
+                        const parts = arrivalDate.split('/');
+                        if (parts.length === 3) {
+                            // Assume MM/DD/YYYY format (common in forms)
+                            const month = parts[0].padStart(2, '0');
+                            const day = parts[1].padStart(2, '0');
+                            const year = parts[2];
+                            dateStr = `${year}-${month}-${day}`;
+                        }
+                    } else if (arrivalDate.includes('-')) {
+                        // Already in YYYY-MM-DD format or similar
+                        dateStr = arrivalDate.split('T')[0]; // Remove time part if present
+                    } else {
+                        // Try to parse other formats
+                        const dateObj = new Date(arrivalDate);
+                        if (!isNaN(dateObj.getTime())) {
+                            dateStr = dateObj.toISOString().split('T')[0];
+                        }
+                    }
+                    
+                    const guestCount = parseInt(tourist.num_people) || 1;
+                    
+                    if (dateStr === todayStr) {
+                        todayCount += guestCount;
+                    } else if (dateStr === yesterdayStr) {
+                        yesterdayCount += guestCount;
+                    }
+                }
+            });
+            
+            // Calculate percentage change
+            let percentageChange = 0;
+            let trendDirection = 'stable';
+            let trendClass = 'trend-stable';
+            let iconClass = 'fas fa-minus';
+            let message = '';
+            
+            if (yesterdayCount === 0 && todayCount > 0) {
+                // First day with tourists
+                message = `<span class="trend-percentage">+${todayCount}</span>`;
+                trendDirection = 'up';
+                trendClass = 'trend-up';
+                iconClass = 'fas fa-arrow-up';
+            } else if (yesterdayCount === 0 && todayCount === 0) {
+                // No tourists both days
+                message = `<span class="trend-percentage">0</span>`;
+                trendDirection = 'stable';
+                trendClass = 'trend-stable';
+                iconClass = 'fas fa-minus';
+            } else if (yesterdayCount > 0) {
+                // Calculate actual percentage change
+                percentageChange = ((todayCount - yesterdayCount) / yesterdayCount) * 100;
+                
+                if (percentageChange > 0) {
+                    trendDirection = 'up';
+                    trendClass = 'trend-up';
+                    iconClass = 'fas fa-arrow-up';
+                    message = `<span class="trend-percentage">+${percentageChange.toFixed(1)}%</span>`;
+                } else if (percentageChange < 0) {
+                    trendDirection = 'down';
+                    trendClass = 'trend-down';
+                    iconClass = 'fas fa-arrow-down';
+                    message = `<span class="trend-percentage">${percentageChange.toFixed(1)}%</span>`;
+                } else {
+                    trendDirection = 'stable';
+                    trendClass = 'trend-stable';
+                    iconClass = 'fas fa-equals';
+                    message = `<span class="trend-percentage">0%</span>`;
+                }
+            } else if (todayCount > 0) {
+                // Yesterday had 0, today has tourists
+                message = `<span class="trend-percentage">+${todayCount}</span>`;
+                trendDirection = 'up';
+                trendClass = 'trend-up';
+                iconClass = 'fas fa-arrow-up';
+            }
+            
+            // Update the UI
+            interpretationDiv.className = `trend-interpretation ${trendClass}`;
+            trendIcon.innerHTML = `<i class="${iconClass}"></i>`;
+            trendText.innerHTML = message;
+            
+            // Show the interpretation
+            interpretationDiv.style.display = 'flex';
+            
+        } catch (error) {
+            console.error('Error calculating daily trend:', error);
+            // Hide interpretation on error
+            interpretationDiv.style.display = 'none';
+        }
+    }
+
     // Initialize responsive behavior and load data
     document.addEventListener('DOMContentLoaded', function() {
         // Ensure mobile cards are properly hidden on page load for desktop
@@ -3910,6 +4123,15 @@
             // Update tourist count (sum of all guests)
             const totalGuests = tourists.reduce((sum, t) => sum + (parseInt(t.numTourist) || 0), 0);
             document.getElementById('tourist-count').textContent = totalGuests;
+
+            // Calculate and display daily percentage change
+            // Convert tourists array to format expected by calculateDailyTouristTrend
+            const touristData = tourists.map(t => ({
+                num_people: t.numTourist,
+                date_arrival: t.dateArrival,
+                date: t.dateArrival
+            }));
+            await calculateDailyTouristTrend(touristData);
 
             // Note: Homestay count is now updated in renderHomestayList() using actual database data
 
