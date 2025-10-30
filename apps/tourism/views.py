@@ -615,9 +615,8 @@ def api_register_tourist(request):
         departure_date = datetime.strptime(date_departure, '%Y-%m-%d').date()
     except Exception:
         return JsonResponse({'success': False, 'error': 'Invalid date.'}, status=400)
-    # Prevent duplicate: same homestay and date (matches DB unique constraint)
-    if Booking.objects.filter(homestay=homestay, date=booking_date).exists():
-        return JsonResponse({'success': False, 'error': 'A booking for this homestay and date already exists. Please choose another date.'}, status=409)
+    # Allow multiple bookings for the same homestay and date
+    # No duplicate prevention needed - multiple tourists can book the same homestay on the same date
     Booking.objects.create(
         homestay=homestay,
         date=booking_date,
@@ -630,7 +629,7 @@ def api_register_tourist(request):
         address=address,
         source='registration'
     )
-    return JsonResponse({'success': True, 'message': 'Tourist registered successfully!'})
+    return JsonResponse({'success': True, 'message': f'Tourist "{name}" registered successfully for {homestay_name}!'})
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import authenticate, login, logout
