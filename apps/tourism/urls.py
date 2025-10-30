@@ -37,5 +37,6 @@ urlpatterns = [
     path('api/add_homestay_feature/', views.add_homestay_feature_api, name='add_homestay_feature_api'),
     path('api/calendar-data/', views.calendar_data_api, name='calendar_data_api'),
     path('api/reserve-room/', views.reserve_room_api, name='reserve_room_api'),
+    path('api/homestay/<int:homestay_id>/rooms/', views.homestay_rooms_public_api, name='homestay_rooms_public_api'),
 ]
 

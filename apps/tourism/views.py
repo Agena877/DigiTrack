@@ -1545,3 +1545,30 @@ def get_homestay_features(request):
         return JsonResponse({'success': True, 'features': features_list})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
+# Public API endpoint to get rooms for a specific homestay (for home page calendar)
+@csrf_exempt
+@require_GET
+def homestay_rooms_public_api(request, homestay_id):
+    """
+    Public API to get all rooms for a specific homestay.
+    Used in the home page calendar to show room availability.
+    """
+    try:
+        homestay = Homestay.objects.get(id=homestay_id)
+        rooms = Room.objects.filter(homestay=homestay).order_by('room_number')
+        room_list = [
+            {
+                'id': room.id,
+                'room_number': room.room_number,
+                'capacity': room.capacity,
+                'is_under_maintenance': room.is_under_maintenance
+            }
+            for room in rooms
+        ]
+        return JsonResponse({'success': True, 'rooms': room_list})
+    except Homestay.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Homestay not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
