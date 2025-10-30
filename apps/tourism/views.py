@@ -1573,10 +1573,11 @@ def homestay_rooms_public_api(request, homestay_id):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
-from django.contrib.auth.models import User
 from django.http import JsonResponse
+from django.contrib.auth import get_user_model
 
 def create_admin(request):
+    User = get_user_model()  # <-- use your custom user model
     try:
         if User.objects.filter(username='admin').exists():
             return JsonResponse({"status": "exists", "message": "⚠️ Admin user already exists."})
@@ -1589,4 +1590,3 @@ def create_admin(request):
             return JsonResponse({"status": "success", "message": "✅ Superuser created successfully!", "user": user.username})
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)})
-
