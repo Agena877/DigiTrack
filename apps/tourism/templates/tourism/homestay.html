@@ -877,17 +877,17 @@
         /* Responsive design */
         @media (max-width: 1200px) {
             .charts-container {
-                display: flex;
-                flex-direction: column;
-                gap: 20px;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
             }
             
             .monthly-chart {
-                order: 1; /* Monthly Trends → Top */
+                order: 1; /* Monthly chart on left */
             }
             
             .yearly-chart {
-                order: 2; /* Yearly Trends → Bottom */
+                order: 2; /* Yearly chart on right */
             }
         }
         
@@ -925,8 +925,8 @@
             }
             
             .charts-container {
-                grid-template-columns: 1fr;
-                gap: 20px;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
             }
 
             .content-area {
@@ -1017,8 +1017,9 @@
             }
             
             .charts-container {
-                display: flex;
-                flex-direction: column;
+                display: flex !important;
+                flex-direction: column !important;
+                grid-template-columns: none !important;
                 gap: 16px;
                 margin-top: 1.5rem;
             }
@@ -1043,12 +1044,13 @@
             }
             
             .chart-content {
-                padding: 16px 20px;
-                min-height: 250px;
+                padding: 12px 16px 8px 16px;
+                min-height: 200px;
+                max-height: 220px;
             }
             
             .chart-interpretation {
-                padding: 12px 20px 16px 20px;
+                padding: 8px 16px 12px 16px;
                 display: block !important;
             }
             
@@ -1391,6 +1393,21 @@
                 align-items: center;
                 padding-top: 12px;
                 border-top: 1px solid var(--border-color);
+            }
+            
+            /* More compact charts for smaller mobile screens */
+            .chart-content {
+                padding: 8px 12px 6px 12px !important;
+                min-height: 180px !important;
+                max-height: 200px !important;
+            }
+            
+            .chart-interpretation {
+                padding: 6px 12px 8px 12px !important;
+            }
+            
+            .chart-header {
+                padding: 12px 16px 8px 16px !important;
             }
         }
 
@@ -2030,23 +2047,23 @@
             }
         }
         
-        /* Charts Container */
+        /* Charts Container - Side by side for web view */
         .charts-container {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            margin-top: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 1.5rem;
             width: 100%;
             max-width: 100%;
             box-sizing: border-box;
         }
         
         .monthly-chart {
-            order: 1; /* Monthly chart at top */
+            order: 1; /* Monthly chart on left */
         }
         
         .yearly-chart {
-            order: 2; /* Yearly chart at bottom */
+            order: 2; /* Yearly chart on right */
         }
         
         .chart-card {
@@ -2065,12 +2082,30 @@
             transform: translateY(-2px);
             box-shadow: var(--shadow-lg);
         }
+
+        /* Desktop and large tablet view - keep charts side by side */
+        @media (min-width: 769px) {
+            .charts-container {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                margin-top: 1.5rem;
+            }
+            
+            .monthly-chart {
+                order: 1; /* Left side */
+            }
+            
+            .yearly-chart {
+                order: 2; /* Right side */
+            }
+        }
         
         .chart-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 24px 16px 24px;
+            padding: 16px 20px 12px 20px;
             border-bottom: 1px solid var(--border-color);
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
         }
@@ -2107,13 +2142,14 @@
         }
         
         .chart-content {
-            padding: 20px 24px;
+            padding: 16px 20px;
             position: relative;
-            min-height: 300px;
+            min-height: 250px;
+            max-height: 300px;
         }
         
         .chart-interpretation {
-            padding: 16px 24px 20px 24px;
+            padding: 12px 20px 16px 20px;
             background: #f8fafc;
             border-top: 1px solid var(--border-color);
             display: block !important; /* Ensure interpretations are always visible */
