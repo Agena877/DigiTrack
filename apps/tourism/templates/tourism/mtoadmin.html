@@ -798,18 +798,33 @@
         
         .charts-container {
             display: flex;
-            flex-direction: column;
+            flex-direction: row; /* Side by side on desktop */
             gap: 20px;
             max-width: 100%;
             box-sizing: border-box;
         }
         
         .monthly-chart {
-            order: 1; /* Monthly chart at top */
+            order: 1; /* Monthly chart on left */
+            flex: 1; /* Equal width */
+            min-width: 0; /* Prevent flex item overflow */
         }
         
         .yearly-chart {
-            order: 2; /* Yearly chart at bottom */
+            order: 2; /* Yearly chart on right */
+            flex: 1; /* Equal width */
+            min-width: 0; /* Prevent flex item overflow */
+        }
+        
+        /* Ensure charts have good proportions on very wide screens */
+        @media (min-width: 1400px) {
+            .charts-container {
+                gap: 32px;
+            }
+            
+            .chart-card {
+                max-width: 600px; /* Prevent charts from becoming too wide */
+            }
         }
         
         .chart-card {
@@ -1391,16 +1406,18 @@
         @media (max-width: 1200px) {
             .charts-container {
                 display: flex;
-                flex-direction: column;
+                flex-direction: column; /* Stack vertically on smaller screens */
                 gap: 16px;
             }
             
             .monthly-chart {
                 order: 1; /* Monthly Trends → Top */
+                flex: none; /* Reset flex for mobile */
             }
             
             .yearly-chart {
                 order: 2; /* Yearly Trends → Bottom */
+                flex: none; /* Reset flex for mobile */
             }
         }
 
@@ -1525,16 +1542,18 @@
             
             .charts-container {
                 display: flex;
-                flex-direction: column;
+                flex-direction: column; /* Stack vertically on tablet/mobile */
                 gap: 16px;
             }
             
             .monthly-chart {
                 order: 1; /* Monthly Trends → Top */
+                flex: none; /* Reset flex for mobile */
             }
             
             .yearly-chart {
                 order: 2; /* Yearly Trends → Bottom */
+                flex: none; /* Reset flex for mobile */
             }
             
             .chart-card {
@@ -2291,7 +2310,7 @@
             
             .charts-container {
                 display: flex;
-                flex-direction: column;
+                flex-direction: column; /* Stack vertically on mobile */
                 gap: 12px;
                 width: 100%;
                 max-width: 100%;
@@ -2301,10 +2320,12 @@
             
             .monthly-chart {
                 order: 1; /* Monthly Trends → Top */
+                flex: none; /* Reset flex for mobile */
             }
             
             .yearly-chart {
                 order: 2; /* Yearly Trends → Bottom */
+                flex: none; /* Reset flex for mobile */
             }
             
             .chart-card {
