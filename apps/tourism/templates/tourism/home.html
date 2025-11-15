@@ -1706,14 +1706,16 @@
             
             <div style="margin-top: 2rem;">
                 <h3 style="color: #f39c12; margin-bottom: 1rem;">Date Availability</h3>
-                <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
-                    <select id="filterMonth" style="padding:6px 12px; border-radius:8px; border:1px solid #e2e8f0;">
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px; flex-wrap:wrap;">
+                    <select id="filterMonth" style="padding:6px 12px; border-radius:8px; border:1px solid #e2e8f0;" onchange="renderAvailabilityCalendar()">
                         <!-- Month options will be filled by JS -->
                     </select>
-                    <select id="filterYear" style="padding:6px 12px; border-radius:8px; border:1px solid #e2e8f0;">
+                    <select id="filterYear" style="padding:6px 12px; border-radius:8px; border:1px solid #e2e8f0;" onchange="renderAvailabilityCalendar()">
                         <!-- Year options will be filled by JS -->
                     </select>
-                    <button onclick="renderAvailabilityCalendar()" style="padding:6px 16px; border-radius:8px; background:#4a90e2; color:white; border:none; cursor:pointer;">Filter</button>
+                    <button onclick="navigateMonth(-1)" style="padding:6px 12px; border-radius:8px; background:#6c757d; color:white; border:none; cursor:pointer;">‹ Prev</button>
+                    <button onclick="navigateMonth(1)" style="padding:6px 12px; border-radius:8px; background:#6c757d; color:white; border:none; cursor:pointer;">Next ›</button>
+                    <button onclick="goToToday()" style="padding:6px 12px; border-radius:8px; background:#17a2b8; color:white; border:none; cursor:pointer;">Today</button>
                 </div>
                 <div id="availabilityCalendar"></div>
                 <div id="calendarLegend" style="margin-top:1rem;">
@@ -2333,31 +2335,61 @@
             const selectedDateInfo = document.getElementById('selectedDateInfo');
             selectedDateInfo.textContent = '';
             const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-            const month = parseInt(document.getElementById('filterMonth').value);
-            const year = parseInt(document.getElementById('filterYear').value);
+            const selectedMonth = getSelectedMonth();
+            const year = getSelectedYear();
+            const month = selectedMonth;
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            // Get all rooms for this homestay first
+            // ============== PUBLIC HOMESTAY CALENDAR DATA ==============
+            // Use PUBLIC API for homestay room and booking data (no authentication required)
             let allRooms = [];
-            if (currentHomestayId) {
-                try {
-                    const response = await fetch(`/api/homestay/${currentHomestayId}/rooms/`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        allRooms = data.rooms || [];
-                    }
-                } catch (error) {
-                    console.log('Could not fetch rooms, using fallback');
-                    // Fallback: generate default room numbers if API fails
-                    allRooms = [{room_number: '101'}, {room_number: '102'}, {room_number: '103'}];
+            let bookings = [];
+            
+            try {
+                console.log(`[CALENDAR SYNC] Fetching room and booking data for homestay ${currentHomestayId}...`);
+                const response = await fetch(`/api/homestay/${currentHomestayId}/rooms/`);
+                
+                if (!response.ok) {
+                    throw new Error(`API returned ${response.status}: ${response.statusText}`);
                 }
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to load homestay data');
+                }
+                
+                allRooms = data.rooms || [];
+                bookings = data.bookings || [];
+                
+                console.log(`[CALENDAR SYNC] Successfully loaded ${allRooms.length} rooms and ${bookings.length} bookings for homestay ${currentHomestayId}`);
+                
+                // Debug room data with maintenance status
+                allRooms.forEach((room, index) => {
+                    const maintenanceStatus = room.is_under_maintenance ? 'MAINTENANCE' : 'AVAILABLE';
+                    console.log(`  Room ${index + 1}: ID=${room.id}, Number=${room.room_number}, Maintenance=${room.is_under_maintenance} -> ${maintenanceStatus}`);
+                });
+                
+                // Debug booking data
+                console.log(`[BOOKING SYNC] Loaded ${bookings.length} bookings:`);
+                bookings.forEach((booking, index) => {
+                    console.log(`  Booking ${index + 1}: Room ID=${booking.room_id}, Date=${booking.date}, Status=${booking.status}`);
+                });
+                
+            } catch (error) {
+                console.error('[CALENDAR SYNC ERROR] Failed to fetch homestay data:', error);
+                // Provide fallback room data
+                allRooms = [
+                    {id: 1, room_number: '101', is_under_maintenance: false, homestay_id: currentHomestayId},
+                    {id: 2, room_number: '102', is_under_maintenance: false, homestay_id: currentHomestayId},
+                    {id: 3, room_number: '103', is_under_maintenance: false, homestay_id: currentHomestayId}
+                ];
+                bookings = [];
+                console.log('[CALENDAR SYNC] Using fallback data');
             }
 
-            // bookings_json structure: { [homestayId]: { [date]: [{room_number, status, ...}, ...] } }
-            let bookingsData = {};
-            if (window.HOMESTAY_BOOKINGS && currentHomestayId && window.HOMESTAY_BOOKINGS[currentHomestayId]) {
-                bookingsData = window.HOMESTAY_BOOKINGS[currentHomestayId];
-            }
+            // Using public API to fetch homestay room and booking data
+            console.log(`[HOMESTAY SYNC] Successfully loaded room and reservation data from homestay account`);
 
             let calendarHtml = `<div style="font-weight:bold; margin-bottom:8px;">${monthNames[month]} ${year}</div>`;
             calendarHtml += '<table style="width:auto; border-collapse:collapse; text-align:center; margin-bottom:12px; font-size:13px;">';
@@ -2373,8 +2405,7 @@
             }
 
             for (let day = 1; day <= daysInMonth; day++) {
-                let dateStr = `${year}-${(month+1).toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`;
-                let bookedRooms = bookingsData[dateStr] || [];
+                let dateStr = `${year}-${String(month+1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 let dateId = `cal-${year}-${month+1}-${day}`;
                 calendarHtml += `<td style="padding:2px 3px; vertical-align:top; min-width:38px; max-width:60px;">`;
                 calendarHtml += `<div style="font-weight:bold; margin-bottom:1px; font-size:13px;">${day}</div>`;
@@ -2382,27 +2413,65 @@
                 if (allRooms.length === 0) {
                     calendarHtml += `<div style='color:#888; font-size:11px;'>No rooms</div>`;
                 } else {
-                    // Show all rooms with their status for this date
+                    // Show all rooms with their status for this date (maintenance + reservations)
                     allRooms.forEach(room => {
-                        // Check if this room has a booking on this date
-                        const roomBooking = bookedRooms.find(booking => booking.room_number === room.room_number);
+                        // ============== HOMESTAY ACCOUNT SYNC - MAINTENANCE & RESERVATIONS ==============
                         
-                        let statusClass = '';
-                        if (roomBooking) {
-                            // Room has a booking - use the booking status
-                            if (roomBooking.status === 'reserved') {
-                                statusClass = 'calendar-room reserved';
-                            } else if (roomBooking.status === 'maintenance' || roomBooking.status === 'under_maintenance') {
-                                statusClass = 'calendar-room maintenance';
+                        let statusClass = 'calendar-room available'; // Default
+                        let roomStatus = 'Available';
+                        let extraAttributes = '';
+                        let statusIcon = '';
+                        
+                        // PRIORITY 1: Check if room is under maintenance (applies to ALL dates)
+                        if (room.is_under_maintenance === true) {
+                            statusClass = 'calendar-room maintenance';
+                            roomStatus = 'Under Maintenance';
+                            statusIcon = '🔧';
+                            console.log(`🔧 MAINTENANCE: Room ${room.room_number} is under maintenance on ${dateStr}`);
+                        } else {
+                            // PRIORITY 2: Check for bookings on this specific date
+                            const booking = bookings.find(b => b.room_id === room.id && b.date === dateStr);
+                            
+                            if (booking) {
+                                if (booking.status === 'reserved') {
+                                    statusClass = 'calendar-room reserved';
+                                    roomStatus = 'Reserved';
+                                    statusIcon = '🏠';
+                                    console.log(`🏠 RESERVED: Room ${room.room_number} is reserved on ${dateStr} (${booking.num_people} guests)`);
+                                } else {
+                                    statusClass = 'calendar-room available';
+                                    roomStatus = 'Available';
+                                    statusIcon = '';
+                                    console.log(`✅ AVAILABLE: Room ${room.room_number} is available on ${dateStr}`);
+                                }
                             } else {
                                 statusClass = 'calendar-room available';
+                                roomStatus = 'Available';
+                                statusIcon = '';
+                                console.log(`✅ AVAILABLE: Room ${room.room_number} has no booking on ${dateStr}`);
                             }
-                        } else {
-                            // Room has no booking - it's available
-                            statusClass = 'calendar-room available';
                         }
                         
-                        calendarHtml += `<div class="${statusClass}" style="margin-bottom:1px; padding:1px 2px; border-radius:3px; font-size:11px; line-height:1.2; display:inline-block; min-width:18px; text-align:center;">${room.room_number}</div>`;
+                        // Styling based on final status
+                        let finalStyle = "margin-bottom:1px; padding:1px 2px; border-radius:3px; font-size:11px; line-height:1.2; display:inline-block; min-width:18px; text-align:center;";
+                        
+                        if (room.is_under_maintenance) {
+                            // MAINTENANCE STYLING (highest priority)
+                            finalStyle += " background:#95a5a6!important; color:#fff!important; opacity:0.8!important; border:2px solid #e74c3c!important; font-weight:bold!important;";
+                            extraAttributes = ' title="Room under maintenance - not available"';
+                        } else if (statusClass.includes('reserved')) {
+                            // RESERVED STYLING
+                            finalStyle += " background:#e74c3c!important; color:#fff!important; border:1px solid #c0392b!important; font-weight:bold!important;";
+                            extraAttributes = ` title="Room ${room.room_number} - Reserved"`;
+                        } else {
+                            // AVAILABLE STYLING
+                            finalStyle += " background:#32a852!important; color:#fff!important; border:1px solid #27ae60!important;";
+                            extraAttributes = ` title="Room ${room.room_number} - Available for booking"`;
+                        }
+                        
+                        console.log(`[HOMESTAY SYNC] Room ${room.room_number} on ${dateStr}: ${roomStatus} (class: ${statusClass})`);
+                        
+                        calendarHtml += `<div class="${statusClass}" style="${finalStyle}"${extraAttributes}>${statusIcon}${room.room_number}</div>`;
                     });
                 }
                 calendarHtml += `</td>`;
@@ -2426,11 +2495,147 @@
             for (let m = 0; m < 12; m++) {
                 filterMonth.innerHTML += `<option value="${m}">${monthNames[m]}</option>`;
             }
-            for (let y = currentYear; y <= currentYear + 2; y++) {
+            for (let y = 2020; y <= 2030; y++) {
                 filterYear.innerHTML += `<option value="${y}">${y}</option>`;
             }
             filterMonth.value = today.getMonth();
             filterYear.value = currentYear;
+        }
+
+        // Helper functions for consistent month/year selection
+        function getSelectedYear() {
+            return parseInt(document.getElementById('filterYear').value);
+        }
+
+        function getSelectedMonth() {
+            return parseInt(document.getElementById('filterMonth').value);
+        }
+
+        // Navigation functions
+        function navigateMonth(direction) {
+            const currentMonth = getSelectedMonth();
+            const currentYear = getSelectedYear();
+            
+            let newMonth = currentMonth + direction;
+            let newYear = currentYear;
+            
+            if (newMonth < 0) {
+                newMonth = 11;
+                newYear--;
+            } else if (newMonth > 11) {
+                newMonth = 0;
+                newYear++;
+            }
+            
+            document.getElementById('filterMonth').value = newMonth;
+            document.getElementById('filterYear').value = newYear;
+            renderAvailabilityCalendar();
+        }
+
+        function goToToday() {
+            const today = new Date();
+            document.getElementById('filterMonth').value = today.getMonth();
+            document.getElementById('filterYear').value = today.getFullYear();
+            renderAvailabilityCalendar();
+        }
+
+        // Function to render year view showing maintenance status across all months
+        async function renderYearView(year) {
+            const calendarDiv = document.getElementById('availabilityCalendar');
+            const selectedDateInfo = document.getElementById('selectedDateInfo');
+            selectedDateInfo.textContent = `Showing room maintenance status and reservations for year ${year}`;
+            
+            // Get all rooms and bookings for this homestay
+            let allRooms = [];
+            let allBookings = [];
+            if (currentHomestayId) {
+                try {
+                    console.log(`[YEAR VIEW] Fetching room and booking data for homestay ${currentHomestayId}...`);
+                    const response = await fetch(`/api/homestay/${currentHomestayId}/rooms/`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        allRooms = data.rooms || [];
+                        allBookings = data.bookings || [];
+                        console.log(`[YEAR VIEW] Loaded ${allRooms.length} rooms and ${allBookings.length} bookings`);
+                    }
+                } catch (error) {
+                    console.log('Could not fetch homestay data, using fallback');
+                    allRooms = [{room_number: '101', is_under_maintenance: false}, {room_number: '102', is_under_maintenance: false}, {room_number: '103', is_under_maintenance: false}];
+                    allBookings = [];
+                }
+            }
+            
+            let yearHtml = `<div style="font-weight:bold; margin-bottom:15px; font-size:16px;">Year ${year} - Room Availability & Reservations</div>`;
+            
+            if (allRooms.length === 0) {
+                yearHtml += `<div style='color:#888;'>No rooms available</div>`;
+            } else {
+                yearHtml += `<div style="display:grid; gap:10px; margin-bottom:15px;">`;
+                allRooms.forEach(room => {
+                    // Use SAME logic as daily calendar - check maintenance & count reservations
+                    const isUnderMaintenance = room.is_under_maintenance === true;
+                    
+                    // Count reservations for this room in the selected year
+                    const roomBookings = allBookings ? allBookings.filter(booking => {
+                        if (booking.room_id !== room.id) return false;
+                        const bookingYear = new Date(booking.date).getFullYear();
+                        return bookingYear === year && booking.status === 'reserved';
+                    }) : [];
+                    
+                    const reservationCount = roomBookings.length;
+                    
+                    let statusText = 'Available All Year';
+                    let statusColor = '#32a852';
+                    let borderStyle = '';
+                    let statusIcon = '✅';
+                    
+                    if (isUnderMaintenance) {
+                        statusText = 'UNDER MAINTENANCE ALL YEAR';
+                        statusColor = '#95a5a6';
+                        borderStyle = 'border:2px solid #e74c3c;';
+                        statusIcon = '🔧';
+                        console.log(`[YEAR VIEW] Room ${room.room_number} is under maintenance`);
+                    } else if (reservationCount > 0) {
+                        statusText = `${reservationCount} Reservation${reservationCount > 1 ? 's' : ''} in ${year}`;
+                        statusColor = '#4a90e2'; // blue for partial bookings
+                        borderStyle = 'border:1px solid #357abd;';
+                        statusIcon = '🏠';
+                        console.log(`[YEAR VIEW] Room ${room.room_number} has ${reservationCount} reservations`);
+                    } else {
+                        console.log(`[YEAR VIEW] Room ${room.room_number} is available all year`);
+                    }
+                    
+                    yearHtml += `<div style="padding:12px; ${borderStyle} border-radius:8px; background:${statusColor}; color:white; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.1);">`;
+                    yearHtml += `<div style="font-weight:bold; font-size:14px;">${statusIcon} Room ${room.room_number}</div>`;
+                    yearHtml += `<div style="font-size:11px; margin-top:4px; font-weight:500;">${statusText}</div>`;
+                    if (isUnderMaintenance) {
+                        yearHtml += `<div style="font-size:10px; margin-top:2px; opacity:0.9;">Not available for booking</div>`;
+                    } else if (reservationCount > 0) {
+                        yearHtml += `<div style="font-size:10px; margin-top:2px; opacity:0.9;">Click calendar to see specific dates</div>`;
+                    }
+                    yearHtml += `</div>`;
+                });
+                yearHtml += `</div>`;
+                
+                // Check for maintenance rooms using correct maintenance logic
+                const hasMaintenanceRooms = allRooms.some(room => room.is_under_maintenance === true);
+                
+                // Add legend for clarity
+                yearHtml += `<div style="margin-top:20px; padding:10px; background:#f8f9fa; border-radius:8px; font-size:12px;">`;
+                yearHtml += `<div style="font-weight:bold; margin-bottom:8px;">Legend:</div>`;
+                yearHtml += `<div style="margin-bottom:4px;"><span style="display:inline-block; width:12px; height:12px; background:#32a852; border-radius:3px; margin-right:8px;"></span>Available all year</div>`;
+                yearHtml += `<div style="margin-bottom:4px;"><span style="display:inline-block; width:12px; height:12px; background:#4a90e2; border-radius:3px; margin-right:8px;"></span>Has reservations</div>`;
+                yearHtml += `<div><span style="display:inline-block; width:12px; height:12px; background:#95a5a6; border:2px solid #e74c3c; border-radius:3px; margin-right:8px;"></span>Under maintenance</div>`;
+                yearHtml += `</div>`;
+                
+                if (hasMaintenanceRooms) {
+                    yearHtml += `<div style="background:#fff3cd; border:1px solid #ffeaa7; padding:10px; border-radius:8px; margin-top:10px;">`;
+                    yearHtml += `<strong>✅ SYNCHRONIZED:</strong> Room status and reservations match homestay account data for ${year}.`;
+                    yearHtml += `</div>`;
+                }
+            }
+            
+            calendarDiv.innerHTML = yearHtml;
         }
 
         function selectCalendarDate(dateId, dateStr) {

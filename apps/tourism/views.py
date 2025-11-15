@@ -1551,22 +1551,44 @@ def get_homestay_features(request):
 @require_GET
 def homestay_rooms_public_api(request, homestay_id):
     """
-    Public API to get all rooms for a specific homestay.
-    Used in the home page calendar to show room availability.
+    Public API to get all rooms and bookings for a specific homestay.
+    Used in the home page calendar to show room availability and reservations.
     """
     try:
         homestay = Homestay.objects.get(id=homestay_id)
         rooms = Room.objects.filter(homestay=homestay).order_by('room_number')
+        bookings = Booking.objects.filter(homestay=homestay)
+        
+        # Build room list
         room_list = [
             {
                 'id': room.id,
                 'room_number': room.room_number,
                 'capacity': room.capacity,
-                'is_under_maintenance': room.is_under_maintenance
+                'is_under_maintenance': room.is_under_maintenance,
+                'homestay_id': room.homestay.id
             }
             for room in rooms
         ]
-        return JsonResponse({'success': True, 'rooms': room_list})
+        
+        # Build booking list (public data only - no personal info)
+        booking_list = [
+            {
+                'id': booking.id,
+                'room_id': booking.room.id if booking.room else None,
+                'date': booking.date.strftime('%Y-%m-%d'),
+                'status': booking.status,
+                'num_people': booking.num_people or 0
+            }
+            for booking in bookings
+        ]
+        
+        return JsonResponse({
+            'success': True, 
+            'rooms': room_list, 
+            'bookings': booking_list,
+            'homestay_id': homestay_id
+        })
     except Homestay.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Homestay not found.'}, status=404)
     except Exception as e:
