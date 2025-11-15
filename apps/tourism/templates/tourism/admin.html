@@ -2120,9 +2120,10 @@
                                    placeholder="Enter username">
                         </label>
                         <label>Password:<br>
-                            <input type="password" id="inputPassword" required 
+                            <input type="password" id="inputPassword" 
                                    autocomplete="new-password" 
-                                   placeholder="Enter password">
+                                   placeholder="Leave blank to keep the current password">
+                            
                         </label>
                         <label>Status:<br>
                             <select id="inputStatus" required>
@@ -2926,20 +2927,28 @@
         }
 
         function saveUser() {
-            const userData = {
+            // Build base payload (do not include password by default when editing)
+            const baseUserData = {
                 homestayName: document.getElementById('inputHomestayName').value,
                 ownerName: document.getElementById('inputOwnerName').value,
                 address: document.getElementById('inputAddress').value,
                 username: document.getElementById('inputUsername').value,
-                password: document.getElementById('inputPassword').value,
                 status: document.getElementById('inputStatus').value
             };
+
+            const passwordValue = document.getElementById('inputPassword').value || '';
 
             // Determine if we're editing or adding
             const isEdit = document.getElementById('modal-title').textContent === 'Edit User';
             const csrftoken = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '';
 
             if (isEdit && currentEditingRow) {
+                // Editing existing user. Only include password if user provided a new one.
+                const payload = Object.assign({}, baseUserData);
+                if (passwordValue.trim() !== '') {
+                    payload.password = passwordValue;
+                }
+
                 // Editing existing user
                 fetch('/api/edit_homestay_user/', {
                     method: 'POST',
@@ -2947,13 +2956,14 @@
                         'Content-Type': 'application/json',
                         'X-CSRFToken': csrftoken
                     },
-                    body: JSON.stringify(userData)
+                    body: JSON.stringify(payload)
                 })
                 .then(response => response.json())
                 .then(result => {
                     console.log('Edit user API result:', result);
                     if (result.success) {
-                        updateUserRow(currentEditingRow, userData);
+                        // Update row using the baseUserData and only change password client-side mask
+                        updateUserRow(currentEditingRow, Object.assign({}, baseUserData, { password: (passwordValue.trim() !== '' ? 'changed' : undefined) }));
                         updateDashboardStats && updateDashboardStats();
                         renderManageUserTable && renderManageUserTable();
                         updateUserCount && updateUserCount();
@@ -2975,6 +2985,13 @@
                     customAlert(errorMsg);
                 });
             } else {
+                // Adding new user - password is required
+                if (passwordValue.trim() === '') {
+                    return customAlert('Password is required when adding a new user.');
+                }
+
+                const payload = Object.assign({}, baseUserData, { password: passwordValue });
+
                 // Adding new user
                 fetch('/api/add_homestay_user/', {
                     method: 'POST',
@@ -2982,7 +2999,7 @@
                         'Content-Type': 'application/json',
                         'X-CSRFToken': csrftoken
                     },
-                    body: JSON.stringify(userData)
+                    body: JSON.stringify(payload)
                 })
                 .then(response => response.json())
                 .then(result => {
