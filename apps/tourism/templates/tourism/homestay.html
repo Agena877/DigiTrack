@@ -2522,28 +2522,43 @@
                         };
                         fetch('/api/update_homestay_features/', {
                             method: 'POST',
+                            credentials: 'same-origin',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'X-CSRFToken': getCSRFToken()
                             },
                             body: JSON.stringify(features)
                         })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
+                        .then(async response => {
+                            // If not JSON (eg. redirect to login), surface an error
+                            const text = await response.text();
+                            try {
+                                const data = JSON.parse(text);
+                                return { ok: response.ok, json: data };
+                            } catch (e) {
+                                return { ok: response.ok, json: null, text };
+                            }
+                        })
+                        .then(({ok, json, text}) => {
+                            if (!ok) {
+                                const msg = json && json.error ? json.error : (text || 'Request failed');
+                                document.getElementById('features-save-status').innerHTML = '<span style="color:red;">Failed to save features: ' + msg + '</span>';
+                            } else if (json && json.success) {
                                 document.getElementById('features-save-status').innerHTML = '<span style="color:green;">Features saved successfully!</span>';
                             } else {
-                                document.getElementById('features-save-status').innerHTML = '<span style="color:red;">Failed to save features: ' + (data.error || 'Unknown error') + '</span>';
+                                const msg = json && json.error ? json.error : 'Unknown error';
+                                document.getElementById('features-save-status').innerHTML = '<span style="color:red;">Failed to save features: ' + msg + '</span>';
                             }
                             setTimeout(() => {
                                 document.getElementById('features-save-status').innerHTML = '';
-                            }, 2000);
+                            }, 3000);
                         })
-                        .catch(() => {
+                        .catch((err) => {
+                            console.error('Error saving features:', err);
                             document.getElementById('features-save-status').innerHTML = '<span style="color:red;">Failed to save features (network error)</span>';
                             setTimeout(() => {
                                 document.getElementById('features-save-status').innerHTML = '';
-                            }, 2000);
+                            }, 3000);
                         });
                     };
 
