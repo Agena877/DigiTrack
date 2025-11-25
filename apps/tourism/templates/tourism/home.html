@@ -1527,9 +1527,9 @@
             <nav>
                 <ul class="nav-menu">
                     <li><a href="#home" onclick="event.preventDefault(); scrollToSection('home');">Home</a></li>
-                    <li><a href="#homestay" onclick="event.preventDefault(); scrollToSection('homestay');">Homestay</a></li>
+                    <li><a href="#homestay" onclick="event.preventDefault(); scrollToSection('homestay');">Homestays</a></li>
                     <li><a href="#performance" onclick="event.preventDefault(); scrollToSection('performance');">Performance</a></li>
-                    <li><a href="#destination" onclick="event.preventDefault(); scrollToSection('destination');">Destination</a></li>
+                    <li><a href="#destination" onclick="event.preventDefault(); scrollToSection('destination');">Destinations</a></li>
                     <li><a href="#about" onclick="event.preventDefault(); scrollToSection('footer');">About</a></li>
                 </ul>
             </nav>
@@ -1556,9 +1556,9 @@
         <nav class="mobile-nav-menu" id="mobileNavMenu">
             <ul>
                 <li><a href="#home" onclick="scrollToSection('home'); closeMobileMenu();">🏠 Home</a></li>
-                <li><a href="#homestay" onclick="scrollToSection('homestay'); closeMobileMenu();">🏡 Homestay</a></li>
+                <li><a href="#homestay" onclick="scrollToSection('homestay'); closeMobileMenu();">🏡 Homestays</a></li>
                 <li><a href="#performance" onclick="scrollToSection('performance'); closeMobileMenu();">📊 Performance</a></li>
-                <li><a href="#destination" onclick="scrollToSection('destination'); closeMobileMenu();">🏖️ Destination</a></li>
+                <li><a href="#destination" onclick="scrollToSection('destination'); closeMobileMenu();">🏖️ Destinations</a></li>
                 <li><a href="#about" onclick="scrollToSection('footer'); closeMobileMenu();">ℹ️ About</a></li>
                 <li class="mobile-login-item">
                     <button class="mobile-login-btn" onclick="openLoginModal(true); closeMobileMenu();">
@@ -1632,7 +1632,7 @@
     <section id="homestay" class="section">
 
 
-        <h2 class="section-title">List of Registered Homestay</h2>
+        <h2 class="section-title">List of Registered Homestays</h2>
         <div class="homestay-list" id="homestayList">
             {% for homestay in homestays %}
             <div class="homestay-item homestay-card{% if forloop.counter > 6 %} hidden{% endif %}" data-homestay-id="{{ homestay.id }}">
@@ -1759,9 +1759,9 @@
             <div class="footer-section">
                 <h3>Developers</h3>
                 <ul>
-                    <li>Louwela C. Macuha</li>
-                    <li>Niño Jesus A. Agena</li>
-                    <li>Emerson A. Adarlo</li>
+                    <li>Louwela Caguete Macuha</li>
+                    <li>Niño Jesus Areja Agena</li>
+                    <li>Emerson Abejuela Adarlo</li>
                 </ul>
             </div>
 
