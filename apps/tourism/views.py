@@ -1,26 +1,29 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from .models import Room
 # AJAX endpoint to delete a room
 @csrf_exempt
 @require_POST
 def delete_room_api(request):
     import json
+    
     try:
         data = json.loads(request.body.decode('utf-8'))
         room_id = data.get('room_id')
         if not room_id:
             return JsonResponse({'success': False, 'error': 'Missing room ID.'}, status=400)
+        
         room = Room.objects.get(id=room_id)
-        # Instead of deleting, mark as under maintenance
-        room.is_under_maintenance = True
-        room.save()
-        return JsonResponse({'success': True, 'room': {
-            'id': room.id,
-            'room_number': room.room_number,
-            'capacity': room.capacity,
-            'status': 'maintenance' if room.is_under_maintenance else 'not_maintenance'
-        }})
+        # Actually delete the room from database
+        room.delete()
+        
+        return JsonResponse({
+            'success': True, 
+            'message': 'Room deleted successfully',
+            'room_id': room_id
+        })
     except Room.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Room not found.'}, status=404)
     except Exception as e:

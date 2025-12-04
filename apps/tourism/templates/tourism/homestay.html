@@ -4149,8 +4149,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show selected section
             document.getElementById(sectionName).classList.add('active');
 
-            // Add active class to clicked link
-            event.target.closest('.sidebar-menu a').classList.add('active');
+            // Add active class to clicked link (only if event exists)
+            if (typeof event !== 'undefined' && event.target) {
+                const targetLink = event.target.closest('.sidebar-menu a');
+                if (targetLink) targetLink.classList.add('active');
+            } else {
+                // Find and activate the corresponding sidebar link
+                const targetLink = document.querySelector(`.sidebar-menu a[href="#${sectionName}"]`);
+                if (targetLink) targetLink.classList.add('active');
+            }
 
             // Force chart resize when switching to dashboard
             if (sectionName === 'dashboard') {
@@ -4367,19 +4374,26 @@ document.addEventListener('DOMContentLoaded', function() {
         // Form Handling
         const roomFormEl = document.getElementById('roomForm');
         if (roomFormEl) {
+            console.log('[DEBUG] Room form handler attached successfully');
             roomFormEl.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                console.log('[DEBUG] Room form submitted - starting add process');
 
                 const roomNumber = document.getElementById('roomNumber').value;
                 const roomCapacity = document.getElementById('roomCapacity').value;
                 const roomStatus = document.getElementById('roomStatus').value;
 
+                console.log('[DEBUG] Form data:', { roomNumber, roomCapacity, roomStatus });
+
                 try {
+                    const csrfToken = getCSRFToken();
+                    console.log('[DEBUG] CSRF Token:', csrfToken);
+
                     const response = await fetch('/api/room/', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || ''
+                            'X-CSRFToken': csrfToken
                         },
                         body: JSON.stringify({
                             room_number: roomNumber,
@@ -4387,23 +4401,48 @@ document.addEventListener('DOMContentLoaded', function() {
                             status: roomStatus
                         })
                     });
+                    
+                    console.log('[DEBUG] Response status:', response.status);
                     const result = await response.json();
+                    console.log('[DEBUG] API response:', result);
+                    
                     if (result.success && result.room) {
+                        console.log('[DEBUG] Room added successfully, updating UI:', result.room);
+                        
+                        // Clear the form
                         this.reset();
+                        
+                        // Switch to dashboard
                         showSection('dashboard');
-                        // Add the new room directly to the table
-                        addRoomToTable(result.room.room_number, result.room.capacity, result.room.status, result.room.id);
+                        
+                        // Add the new room directly to the table without reloading
+                        const tableBody = document.getElementById('roomTableBody');
+                        console.log('[DEBUG] Table body found:', !!tableBody);
+                        
+                        if (tableBody) {
+                            addNewRoomToTable(result.room);
+                            console.log('[DEBUG] Room added to table successfully');
+                        } else {
+                            console.error('[ERROR] Room table body not found!');
+                        }
+                        
+                        // Update dashboard statistics
                         updateDashboardStats();
-                    } else if (result.success) {
-                        // Fallback: if no room object returned, refresh all
-                        this.reset();
-                        showSection('dashboard');
-                        fetchAndRenderRooms();
+                        
+                        // Also render mobile cards if needed
+                        if (window.innerWidth <= 576) {
+                            console.log('[DEBUG] Rendering mobile room cards');
+                            renderMobileRoomCards();
+                        }
+                    } else {
+                        console.error('[ERROR] Failed to add room:', result.error || 'Unknown error');
                     }
                 } catch (err) {
-                    // Optionally handle error silently
+                    console.error('[ERROR] Exception adding room:', err);
                 }
             });
+        } else {
+            console.error('[ERROR] Room form element not found!');
         }
 
 
@@ -4428,25 +4467,106 @@ document.addEventListener('DOMContentLoaded', function() {
             tableBody.appendChild(newRow);
         }
 
+        // Function to add a newly created room to the table without reloading
+        function addNewRoomToTable(room) {
+            console.log('[DEBUG] addNewRoomToTable called with room:', room);
+            const tableBody = document.getElementById('roomTableBody');
+            
+            if (!tableBody) {
+                console.error('[ERROR] roomTableBody element not found!');
+                return;
+            }
+            
+            if (!room || !room.id) {
+                console.error('[ERROR] Invalid room data:', room);
+                return;
+            }
+            
+            const normalizedStatus = String(room.status).toLowerCase();
+            let statusText = (normalizedStatus === 'maintenance' || normalizedStatus === 'under maintenance') ? 'Under Maintenance' : 'Not Under Maintenance';
+            let statusClass = (normalizedStatus === 'maintenance' || normalizedStatus === 'under maintenance') ? 'status-maintenance' : 'status-available';
+            
+            console.log('[DEBUG] Creating new row with status:', normalizedStatus, statusText, statusClass);
+            
+            const newRow = document.createElement('tr');
+            newRow.setAttribute('data-room-id', room.id);
+            newRow.innerHTML = `
+                <td class="editable-cell" data-field="roomNumber">${room.room_number}</td>
+                <td class="editable-cell" data-field="roomCapacity">${room.capacity}</td>
+                <td class="editable-cell" data-field="roomStatus"><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td class="action-icons">
+                    <i class="fas fa-edit edit-icon" title="Edit" onclick="toggleEdit(this)"></i>
+                    <i class="fas fa-trash delete-icon" title="Delete" style="color:#e74c3c;cursor:pointer;margin-left:10px;" onclick="deleteRoom(this, '${room.id}')"></i>
+                </td>
+            `;
+            
+            tableBody.appendChild(newRow);
+            console.log('[DEBUG] New room row appended to table. Total rows now:', tableBody.children.length);
+            console.log('[DEBUG] New room added to table successfully:', room.room_number);
+        }
+
 // Delete room function (must be global, not inside addRoomToTable)
 async function deleteRoom(iconElem, roomId) {
+    console.log('[DEBUG] deleteRoom called with roomId:', roomId);
+    
     const row = iconElem.closest('tr');
+    
     try {
+        const csrfToken = getCSRFToken();
+        console.log('[DEBUG] CSRF Token:', csrfToken);
+        
         const resp = await fetch('/api/delete-room/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || ''
+                'X-CSRFToken': csrfToken
             },
             body: JSON.stringify({ room_id: roomId })
         });
-        const result = await resp.json();
-        if (result.success && result.room) {
-            // Remove the row from the dashboard table (since under maintenance rooms are hidden)
-            row.remove();
-            updateDashboardStats();
+        
+        console.log('[DEBUG] Response status:', resp.status);
+        
+        if (!resp.ok) {
+            throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
         }
-    } catch (err) {}
+        
+        const result = await resp.json();
+        console.log('[DEBUG] Response result:', result);
+        
+        if (result.success) {
+            console.log('[DEBUG] Room deleted successfully');
+            // Remove the row from the table immediately
+            row.remove();
+            
+            // Update room count immediately without waiting for API call
+            const tableRows = document.querySelectorAll('#roomTableBody tr');
+            const totalRoomsElem = document.getElementById('totalRooms');
+            if (totalRoomsElem) totalRoomsElem.textContent = tableRows.length || '-';
+            
+            // Also update mobile cards if needed
+            if (window.innerWidth <= 576) {
+                renderMobileRoomCards();
+            }
+            
+            // Update full dashboard stats in background (non-blocking)
+            setTimeout(() => {
+                updateDashboardStats().catch(err => console.warn('Stats update failed:', err));
+            }, 10);
+            
+            // Clear any potential event conflicts and re-enable navigation
+            setTimeout(() => {
+                console.log('[DEBUG] Re-enabling navigation after delete');
+                // Force refresh sidebar navigation to ensure responsiveness
+                refreshSidebarNavigation();
+            }, 100);
+            
+            console.log('[DEBUG] Room deletion UI update completed');
+        } else {
+            console.error('[ERROR] Delete failed:', result.error);
+        }
+    } catch (err) {
+        console.error('[ERROR] Exception during delete:', err);
+    }
 }
 
         // Mobile Room Management Functions
@@ -4604,40 +4724,43 @@ async function deleteRoom(iconElem, roomId) {
             const roomId = card.getAttribute('data-room-id');
             const roomNumber = card.getAttribute('data-room-number');
             
-            // Delete room without confirmation in mobile view
+            console.log('[DEBUG] deleteMobileRoom called with roomId:', roomId);
             
             try {
+                const csrfToken = getCSRFToken();
+                console.log('[DEBUG] Mobile CSRF Token:', csrfToken);
+                
                 const response = await fetch('/api/delete-room/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || ''
+                        'X-CSRFToken': csrfToken
                     },
                     body: JSON.stringify({ room_id: roomId })
                 });
                 
+                console.log('[DEBUG] Mobile response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const result = await response.json();
+                console.log('[DEBUG] Mobile response result:', result);
                 
                 if (result.success) {
-                    // Remove from table
-                    const tableRow = document.querySelector(`#roomTableBody tr[data-room-id="${roomId}"]`);
-                    if (tableRow) {
-                        tableRow.remove();
-                    }
-                    
-                    // Remove card
+                    console.log('[DEBUG] Mobile room deleted successfully');
+                    // Remove card first
                     card.remove();
-                    
                     // Update dashboard stats
                     updateDashboardStats();
-                    
-                    // Room deleted successfully - no alert needed
+                    // Refresh the room list to ensure consistency
+                    await fetchAndRenderRooms();
                 } else {
-                    console.error('Failed to delete room:', result.message);
+                    console.error('[ERROR] Failed to delete mobile room:', result.error);
                 }
             } catch (error) {
-                console.error('Error deleting room:', error);
-                // Error logged - no alert needed in mobile view
+                console.error('[ERROR] Exception during mobile delete:', error);
             }
         }
 
@@ -4812,54 +4935,110 @@ async function deleteRoom(iconElem, roomId) {
             window.sidebarNavInitialized = true;
             let calendarNavInitialized = false;
             document.querySelectorAll('.sidebar-menu a').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    // Only handle navigation for non-logout links
-                    if (this.id === 'logout-link') {
-                        e.preventDefault();
-                        logout();
-                        return;
-                    }
-                    e.preventDefault();
-                    // Remove active from all, add to clicked
-                    document.querySelectorAll('.sidebar-menu a').forEach(l => l.classList.remove('active'));
-                    this.classList.add('active');
-                    // Show the correct section
-                    let section = '';
-                    if (this.id === 'dashboard-link') section = 'dashboard';
-                    else if (this.id === 'room-management-link') section = 'available-room';
-                    else if (this.id === 'tourist-management-link') section = 'tourist-management';
-                    else if (this.id === 'date-availability-link') section = 'date-availability';
-                    else if (this.id === 'features-link') section = 'features-section';
-                    if (section) {
-                        // Hide all sections
-                        document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-                        // Show selected section
-                        document.getElementById(section).classList.add('active');
-                        // Render calendar if needed
-                        if (section === 'date-availability') {
-                            // Always repopulate year filter and set month to current if not set
-                            populateYearFilter();
-                            const monthSelect = document.getElementById('month-filter');
-                            const yearSelect = document.getElementById('year-filter');
-                            const now = new Date();
-                            if (!monthSelect.value || monthSelect.value === '') monthSelect.value = (now.getMonth() + 1).toString();
-                            if (!yearSelect.value || yearSelect.value === '') yearSelect.value = now.getFullYear();
-                            // Initialize navigation buttons only once
-                            if (!calendarNavInitialized) {
-                                // Trigger the nav button setup by dispatching DOMContentLoaded again for that block
-                                const event = new Event('DOMContentLoaded');
-                                document.dispatchEvent(event);
-                                calendarNavInitialized = true;
-                            }
-                            renderAvailabilityCalendar();
-                        }
-                        // Always fetch and render rooms when switching to dashboard or room management
-                        if (section === 'dashboard' || section === 'available-room') {
-                            fetchAndRenderRooms();
-                        }
-                    }
-                });
+                // Remove any existing event listeners to prevent duplicates
+                link.removeEventListener('click', handleSidebarClick);
+                // Add new event listener
+                link.addEventListener('click', handleSidebarClick, { passive: false });
             });
+        }
+        
+        // Dedicated sidebar click handler function
+        function handleSidebarClick(e) {
+            // Only handle navigation for non-logout links
+            if (this.id === 'logout-link') {
+                e.preventDefault();
+                logout();
+                return;
+            }
+            
+            // Prevent default and stop propagation immediately
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            
+            // Immediate UI response - show navigation is working
+            console.log('[DEBUG] Sidebar navigation clicked:', this.id, 'at', new Date().toISOString());
+            
+            // Disable all sidebar links momentarily to prevent rapid clicking
+            document.querySelectorAll('.sidebar-menu a').forEach(l => {
+                l.style.pointerEvents = 'none';
+            });
+            
+            // Remove active from all, add to clicked (immediate visual feedback)
+            document.querySelectorAll('.sidebar-menu a').forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Show the correct section immediately
+            let section = '';
+            if (this.id === 'dashboard-link') section = 'dashboard';
+            else if (this.id === 'room-management-link') section = 'available-room';
+            else if (this.id === 'tourist-management-link') section = 'tourist-management';
+            else if (this.id === 'date-availability-link') section = 'date-availability';
+            else if (this.id === 'features-link') section = 'features-section';
+            
+            if (section) {
+                // Hide all sections and show selected section immediately
+                document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+                const targetSection = document.getElementById(section);
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                    console.log('[DEBUG] Section switched to:', section, 'successfully');
+                }
+                        // Handle section-specific initialization in background (non-blocking)
+                        setTimeout(() => {
+                            if (section === 'date-availability') {
+                                // Always repopulate year filter and set month to current if not set
+                                populateYearFilter();
+                                const monthSelect = document.getElementById('month-filter');
+                                const yearSelect = document.getElementById('year-filter');
+                                const now = new Date();
+                                if (!monthSelect.value || monthSelect.value === '') monthSelect.value = (now.getMonth() + 1).toString();
+                                if (!yearSelect.value || yearSelect.value === '') yearSelect.value = now.getFullYear();
+                                // Initialize navigation buttons only once
+                                if (!calendarNavInitialized) {
+                                    // Trigger the nav button setup by dispatching DOMContentLoaded again for that block
+                                    const event = new Event('DOMContentLoaded');
+                                    document.dispatchEvent(event);
+                                    calendarNavInitialized = true;
+                                }
+                                renderAvailabilityCalendar();
+                            }
+                            // Always fetch and render rooms when switching to dashboard or room management
+                            if (section === 'dashboard' || section === 'available-room') {
+                                fetchAndRenderRooms();
+                            }
+                        }, 10);
+                        
+                        // Close mobile menu immediately if open
+                        if (document.body.classList.contains('mobile-menu-open')) {
+                            closeMobileMenu();
+                        }
+                        
+                        // Re-enable sidebar navigation after a short delay
+                        setTimeout(() => {
+                            document.querySelectorAll('.sidebar-menu a').forEach(l => {
+                                l.style.pointerEvents = 'auto';
+                            });
+                            console.log('[DEBUG] Sidebar navigation re-enabled');
+                        }, 100);
+                    }
+        }
+        
+        // Force refresh sidebar navigation (use after room operations)
+        function refreshSidebarNavigation() {
+            console.log('[DEBUG] Refreshing sidebar navigation bindings');
+            // Reset the initialization flag to allow re-binding
+            window.sidebarNavInitialized = false;
+            // Re-initialize navigation with fresh event listeners
+            if (!window.sidebarNavInitialized) {
+                window.sidebarNavInitialized = true;
+                document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                    // Remove any existing event listeners to prevent duplicates
+                    link.removeEventListener('click', handleSidebarClick);
+                    // Add new event listener
+                    link.addEventListener('click', handleSidebarClick, { passive: false });
+                });
+            }
+            console.log('[DEBUG] Sidebar navigation refreshed completely');
         }
         // Initial dashboard load
         document.addEventListener('DOMContentLoaded', function() {
