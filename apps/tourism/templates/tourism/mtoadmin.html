@@ -2847,7 +2847,7 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="{% static 'tourism/css/vendor/fontawesome.min.css' %}" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
@@ -3099,8 +3099,8 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="{% static 'tourism/js/vendor/chart.min.js' %}"></script>
+    <script src="{% static 'tourism/js/vendor/chartjs-plugin-datalabels.min.js' %}"></script>
     <script>
     // Debounce helper to avoid firing requests on every keystroke
     function debounce(fn, wait) {
