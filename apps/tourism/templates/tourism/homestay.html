@@ -2229,7 +2229,7 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <link rel="stylesheet" href="{% static 'tourism/css/font-awesome.min.css' %}" />
 </head>
 <body>
     <!-- Sidebar - Match mtoadmin.html structure -->
@@ -2700,8 +2700,8 @@
                         </div>
                     </div>
                 </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="{% static 'tourism/js/chart.min.js' %}"></script>
+    <script src="{% static 'tourism/js/chartjs-plugin-datalabels.min.js' %}"></script>
     <script>
     // Tourist Trends Chart Logic
     function populateMonthlyTrendYearSelect(currentYear) {
@@ -2722,18 +2722,33 @@
     }
 
     let monthlyChart, yearlyChart;
+    let chartsInitialized = false;
+    
     async function renderTouristCharts() {
-        const currentYear = new Date().getFullYear();
-        const year = parseInt(document.getElementById('monthly-trend-year-select').value) || currentYear;
-        const yearRange = parseInt(document.getElementById('yearly-trend-range-select').value) || 5;
-        const data = await fetchTouristTrends(year, yearRange);
-        
-        // Monthly Chart
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const monthlyData = months.map(m => data.monthly[m] || 0);
-        const ctxMonth = document.getElementById('tourist-monthly-chart').getContext('2d');
-        if (monthlyChart) { monthlyChart.destroy(); }
-        monthlyChart = new Chart(ctxMonth, {
+        try {
+            const currentYear = new Date().getFullYear();
+            const year = parseInt(document.getElementById('monthly-trend-year-select').value) || currentYear;
+            const yearRange = parseInt(document.getElementById('yearly-trend-range-select').value) || 5;
+            const data = await fetchTouristTrends(year, yearRange);
+            
+            // Check if canvas elements exist
+            const monthlyCanvas = document.getElementById('tourist-monthly-chart');
+            const yearlyCanvas = document.getElementById('tourist-yearly-chart');
+            
+            if (!monthlyCanvas || !yearlyCanvas) {
+                console.warn('Chart canvas elements not found');
+                return;
+            }
+            
+            // Monthly Chart
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const monthlyData = months.map(m => data.monthly[m] || 0);
+            const ctxMonth = monthlyCanvas.getContext('2d');
+            if (monthlyChart) { 
+                monthlyChart.destroy(); 
+                monthlyChart = null;
+            }
+            monthlyChart = new Chart(ctxMonth, {
             type: 'line',
             data: {
                 labels: months,
@@ -2770,15 +2785,18 @@
             plugins: [ChartDataLabels]
         });
         
-        // Yearly Chart (ensure full range is shown)
-        const startYear = year - yearRange + 1;
-        const endYear = year;
-        const years = [];
-        for (let y = startYear; y <= endYear; y++) years.push(y.toString());
-        const yearlyData = years.map(y => data.yearly && data.yearly[y] ? data.yearly[y] : 0);
-        const ctxYear = document.getElementById('tourist-yearly-chart').getContext('2d');
-        if (yearlyChart) { yearlyChart.destroy(); }
-        yearlyChart = new Chart(ctxYear, {
+            // Yearly Chart (ensure full range is shown)
+            const startYear = year - yearRange + 1;
+            const endYear = year;
+            const years = [];
+            for (let y = startYear; y <= endYear; y++) years.push(y.toString());
+            const yearlyData = years.map(y => data.yearly && data.yearly[y] ? data.yearly[y] : 0);
+            const ctxYear = yearlyCanvas.getContext('2d');
+            if (yearlyChart) { 
+                yearlyChart.destroy(); 
+                yearlyChart = null;
+            }
+            yearlyChart = new Chart(ctxYear, {
             type: 'line',
             data: {
                 labels: years,
@@ -2812,18 +2830,28 @@
                     }
                 }
             },
-            plugins: [ChartDataLabels]
-        });
-        
-        // Generate interpretations
-        generateMonthlyInterpretation(monthlyData, months, year);
-        generateYearlyInterpretation(yearlyData, years);
-        
-        // Ensure interpretations are visible
-        const monthlyInterp = document.getElementById('monthly-interpretation');
-        const yearlyInterp = document.getElementById('yearly-interpretation');
-        if (monthlyInterp) monthlyInterp.style.display = 'block';
-        if (yearlyInterp) yearlyInterp.style.display = 'block';
+                plugins: [ChartDataLabels]
+            });
+            
+            // Generate interpretations
+            generateMonthlyInterpretation(monthlyData, months, year);
+            generateYearlyInterpretation(yearlyData, years);
+            
+            // Ensure interpretations are visible
+            const monthlyInterp = document.getElementById('monthly-interpretation');
+            const yearlyInterp = document.getElementById('yearly-interpretation');
+            if (monthlyInterp) monthlyInterp.style.display = 'block';
+            if (yearlyInterp) yearlyInterp.style.display = 'block';
+            
+            chartsInitialized = true;
+        } catch (error) {
+            console.error('Error rendering tourist charts:', error);
+            // Show error message to user
+            const monthlyCanvas = document.getElementById('tourist-monthly-chart');
+            const yearlyCanvas = document.getElementById('tourist-yearly-chart');
+            if (monthlyCanvas) monthlyCanvas.style.display = 'none';
+            if (yearlyCanvas) yearlyCanvas.style.display = 'none';
+        }
     }
     
     function generateMonthlyInterpretation(monthlyData, months, year) {
@@ -2921,13 +2949,36 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        // Prevent multiple initializations
+        if (window.touristChartsInitialized) return;
+        window.touristChartsInitialized = true;
+        
         // Populate year/range selects
         const currentYear = new Date().getFullYear();
         populateMonthlyTrendYearSelect(currentYear);
-        document.getElementById('yearly-trend-range-select').value = 5;
-        renderTouristCharts();
-        document.getElementById('monthly-trend-year-select').addEventListener('change', renderTouristCharts);
-        document.getElementById('yearly-trend-range-select').addEventListener('change', renderTouristCharts);
+        
+        const yearRangeSelect = document.getElementById('yearly-trend-range-select');
+        const monthYearSelect = document.getElementById('monthly-trend-year-select');
+        
+        if (yearRangeSelect) {
+            yearRangeSelect.value = 5;
+        }
+        
+        // Initialize charts after a short delay to ensure DOM is ready
+        setTimeout(() => {
+            renderTouristCharts();
+        }, 100);
+        
+        // Add event listeners only once
+        if (monthYearSelect && !monthYearSelect.hasAttribute('data-listener-added')) {
+            monthYearSelect.addEventListener('change', renderTouristCharts);
+            monthYearSelect.setAttribute('data-listener-added', 'true');
+        }
+        
+        if (yearRangeSelect && !yearRangeSelect.hasAttribute('data-listener-added')) {
+            yearRangeSelect.addEventListener('change', renderTouristCharts);
+            yearRangeSelect.setAttribute('data-listener-added', 'true');
+        }
     });
     </script>
             </div>
@@ -3773,7 +3824,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Room Management Functions
         function toggleEdit(editButton) {
+            if (!editButton) {
+                console.error('toggleEdit: editButton is null');
+                return;
+            }
+            
+            // Check if this is a table row or mobile card
             const row = editButton.closest('tr');
+            const mobileCard = editButton.closest('.room-card');
+            
+            if (!row && !mobileCard) {
+                console.error('toggleEdit: Could not find parent tr element or mobile card');
+                return;
+            }
+            
+            // For mobile cards, editing is not supported yet
+            if (mobileCard && !row) {
+                alert('Editing rooms is not available in mobile view. Please use desktop view or switch to table mode.');
+                return;
+            }
+            
             const isEditing = editButton.classList.contains('fa-save');
 
             if (isEditing) {
@@ -3786,7 +3856,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function enableRowEditing(row, editButton) {
+            if (!row) {
+                console.error('enableRowEditing: row is null');
+                return;
+            }
+            
+            if (!editButton) {
+                console.error('enableRowEditing: editButton is null');
+                return;
+            }
+            
             const cells = row.querySelectorAll('.editable-cell');
+            
+            if (!cells || cells.length === 0) {
+                console.error('enableRowEditing: No editable cells found');
+                console.log('Row HTML:', row.outerHTML);
+                return;
+            }
 
             cells.forEach(cell => {
                 const field = cell.dataset.field;
@@ -3826,7 +3912,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function saveRowChanges(row, editButton) {
+            if (!row) {
+                console.error('saveRowChanges: row is null');
+                return;
+            }
+            
             const cells = row.querySelectorAll('.editable-cell');
+            if (!cells || cells.length === 0) {
+                console.error('saveRowChanges: No editable cells found');
+                return;
+            }
+            
             let hasErrors = false;
 
             cells.forEach(cell => {
@@ -4005,6 +4101,198 @@ async function deleteRoom(iconElem, roomId) {
         }
     } catch (err) {}
 }
+
+        // Mobile Room Management Functions
+        function toggleMobileEdit(editButton) {
+            if (!editButton) {
+                console.error('toggleMobileEdit: editButton is null');
+                return;
+            }
+            
+            const card = editButton.closest('.room-card');
+            if (!card) {
+                console.error('toggleMobileEdit: Could not find parent room card');
+                return;
+            }
+            
+            const isEditing = editButton.classList.contains('fa-save');
+            
+            if (isEditing) {
+                // Save changes
+                saveMobileRoomChanges(card, editButton);
+            } else {
+                // Enter edit mode
+                enableMobileRoomEditing(card, editButton);
+            }
+        }
+        
+        function enableMobileRoomEditing(card, editButton) {
+            const roomNumber = card.getAttribute('data-room-number');
+            const roomCapacity = card.getAttribute('data-room-capacity');
+            
+            // Get current status from the status badge
+            const statusBadge = card.querySelector('.status-badge');
+            const currentStatus = statusBadge?.textContent?.toLowerCase().includes('maintenance') ? 'maintenance' : 'not_maintenance';
+            
+            // Create editable form
+            const cardHeader = card.querySelector('.card-header');
+            cardHeader.innerHTML = `
+                <div style="width: 100%;">
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 4px; color: #333;">Room Number:</label>
+                        <input type="text" class="mobile-room-number" value="${roomNumber}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 4px; color: #333;">Capacity:</label>
+                        <input type="number" class="mobile-room-capacity" value="${roomCapacity}" min="1" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 4px; color: #333;">Status:</label>
+                        <select class="mobile-room-status" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="not_maintenance" ${currentStatus === 'not_maintenance' ? 'selected' : ''}>Not Under Maintenance</option>
+                            <option value="maintenance" ${currentStatus === 'maintenance' ? 'selected' : ''}>Under Maintenance</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+            
+            // Change edit icon to save icon
+            editButton.classList.remove('fa-edit');
+            editButton.classList.add('fa-save');
+            editButton.title = 'Save Changes';
+        }
+        
+        async function saveMobileRoomChanges(card, editButton) {
+            const roomId = card.getAttribute('data-room-id');
+            const roomNumberInput = card.querySelector('.mobile-room-number');
+            const roomCapacityInput = card.querySelector('.mobile-room-capacity');
+            const roomStatusSelect = card.querySelector('.mobile-room-status');
+            
+            if (!roomNumberInput || !roomCapacityInput || !roomStatusSelect) {
+                console.error('Error: Could not find form fields');
+                return;
+            }
+            
+            const newRoomNumber = roomNumberInput.value.trim();
+            const newCapacity = roomCapacityInput.value.trim();
+            const newStatus = roomStatusSelect.value;
+            
+            // Validation
+            if (!newRoomNumber) {
+                console.error('Room number is required');
+                roomNumberInput.focus();
+                return;
+            }
+            
+            if (!newCapacity || parseInt(newCapacity) < 1) {
+                console.error('Valid room capacity is required (minimum 1)');
+                roomCapacityInput.focus();
+                return;
+            }
+            
+            try {
+                // Update room via API
+                const response = await fetch('/api/update-room/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || ''
+                    },
+                    body: JSON.stringify({
+                        room_id: roomId,
+                        room_number: newRoomNumber,
+                        capacity: parseInt(newCapacity),
+                        status: newStatus
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Update the original table row data
+                    const tableRow = document.querySelector(`#roomTableBody tr[data-room-id="${roomId}"]`);
+                    if (tableRow) {
+                        tableRow.cells[0].textContent = newRoomNumber;
+                        tableRow.cells[1].textContent = newCapacity;
+                        
+                        const statusText = newStatus === 'maintenance' ? 'Under Maintenance' : 'Not Under Maintenance';
+                        const statusClass = newStatus === 'maintenance' ? 'status-maintenance' : 'status-available';
+                        tableRow.cells[2].innerHTML = `<span class="status-badge ${statusClass}">${statusText}</span>`;
+                    }
+                    
+                    // Update card data attributes
+                    card.setAttribute('data-room-number', newRoomNumber);
+                    card.setAttribute('data-room-capacity', newCapacity);
+                    
+                    // Refresh mobile cards to show updated data
+                    renderMobileRoomCards();
+                    
+                    // Room updated successfully - no alert needed
+                } else {
+                    console.error('Failed to update room:', result.message);
+                }
+            } catch (error) {
+                console.error('Error updating room:', error);
+                // Error logged - no alert needed in mobile view
+            }
+            
+            // Change save icon back to edit icon
+            editButton.classList.remove('fa-save');
+            editButton.classList.add('fa-edit');
+            editButton.title = 'Edit Room';
+        }
+        
+        async function deleteMobileRoom(deleteButton) {
+            if (!deleteButton) {
+                console.error('deleteMobileRoom: deleteButton is null');
+                return;
+            }
+            
+            const card = deleteButton.closest('.room-card');
+            if (!card) {
+                console.error('deleteMobileRoom: Could not find parent room card');
+                return;
+            }
+            
+            const roomId = card.getAttribute('data-room-id');
+            const roomNumber = card.getAttribute('data-room-number');
+            
+            // Delete room without confirmation in mobile view
+            
+            try {
+                const response = await fetch('/api/delete-room/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || ''
+                    },
+                    body: JSON.stringify({ room_id: roomId })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Remove from table
+                    const tableRow = document.querySelector(`#roomTableBody tr[data-room-id="${roomId}"]`);
+                    if (tableRow) {
+                        tableRow.remove();
+                    }
+                    
+                    // Remove card
+                    card.remove();
+                    
+                    // Update dashboard stats
+                    updateDashboardStats();
+                    
+                    // Room deleted successfully - no alert needed
+                } else {
+                    console.error('Failed to delete room:', result.message);
+                }
+            } catch (error) {
+                console.error('Error deleting room:', error);
+                // Error logged - no alert needed in mobile view
+            }
+        }
 
         // Fetch all rooms from backend and render in table
         async function fetchAndRenderRooms() {
@@ -4232,7 +4520,7 @@ async function deleteRoom(iconElem, roomId) {
             console.log('Homestay dashboard loaded successfully.');
         });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script src="{% static 'tourism/js/fullcalendar.min.js' %}"></script>
     <script>
         {% if bookings_json %}
         const bookingsAvailability = {{ bookings_json|safe }};
@@ -4859,9 +5147,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 const card = document.createElement('div');
                 card.className = 'room-card';
                 
+                const roomId = row.getAttribute('data-room-id') || '';
                 const roomNumber = cells[0]?.textContent || '';
                 const roomCapacity = cells[1]?.textContent || '';
                 const status = cells[2]?.innerHTML || '';
+                
+                // Store room data in the card for easy access
+                card.setAttribute('data-room-id', roomId);
+                card.setAttribute('data-room-number', roomNumber);
+                card.setAttribute('data-room-capacity', roomCapacity);
                 
                 card.innerHTML = `
                     <div class="card-header">
@@ -4873,7 +5167,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="card-actions">
                         <div class="action-icons">
-                            <i class="fas fa-edit edit-icon" title="Edit" onclick="toggleEdit(this)"></i>
+                            <i class="fas fa-edit edit-icon" title="Edit Room" onclick="toggleMobileEdit(this)" style="color: #0077B6; cursor: pointer; font-size: 18px; margin-right: 15px;"></i>
+                            <i class="fas fa-trash delete-icon" title="Delete Room" onclick="deleteMobileRoom(this)" style="color: #e74c3c; cursor: pointer; font-size: 18px;"></i>
                         </div>
                     </div>
                 `;
