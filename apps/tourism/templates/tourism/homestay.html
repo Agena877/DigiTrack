@@ -2700,9 +2700,48 @@
                         </div>
                     </div>
                 </div>
-    <script src="{% static 'tourism/js/chart.min.js' %}"></script>
-    <script src="{% static 'tourism/js/chartjs-plugin-datalabels.min.js' %}"></script>
+    <!-- Chart.js with CDN fallback for AWS hosting -->
+    <script src="{% static 'tourism/js/chart.min.js' %}" onerror="this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js';"></script>
+    <script src="{% static 'tourism/js/chartjs-plugin-datalabels.min.js' %}" onerror="this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js';"></script>
     <script>
+    // AWS Compatibility Helper Functions
+    async function checkAPIConnectivity() {
+        try {
+            const response = await fetch('/api/my-tourist-chart-data/?test=1', {
+                method: 'HEAD',
+                credentials: 'same-origin'
+            });
+            console.log(`[DEBUG] API connectivity check: ${response.status}`);
+            return response.ok;
+        } catch (error) {
+            console.error('[ERROR] API connectivity check failed:', error);
+            return false;
+        }
+    }
+    
+    function showConnectionError() {
+        const monthlyCanvas = document.getElementById('tourist-monthly-chart');
+        const yearlyCanvas = document.getElementById('tourist-yearly-chart');
+        
+        const errorMsg = `
+            <div style="text-align:center;color:#e74c3c;padding:20px;">
+                <i class="fa fa-wifi" style="font-size:24px;margin-bottom:10px;"></i><br>
+                Connection Error<br>
+                <small>Please check your internet connection and try again</small><br>
+                <button onclick="renderTouristCharts()" style="margin-top:10px;padding:8px 16px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;">
+                    Retry
+                </button>
+            </div>
+        `;
+        
+        if (monthlyCanvas && monthlyCanvas.parentElement) {
+            monthlyCanvas.parentElement.innerHTML = errorMsg;
+        }
+        if (yearlyCanvas && yearlyCanvas.parentElement) {
+            yearlyCanvas.parentElement.innerHTML = errorMsg;
+        }
+    }
+
     // Tourist Trends Chart Logic
     function populateMonthlyTrendYearSelect(currentYear) {
         const select = document.getElementById('monthly-trend-year-select');
@@ -2717,8 +2756,39 @@
     }
 
     async function fetchTouristTrends(year, yearRange) {
-        const resp = await fetch(`/api/my-tourist-chart-data/?year=${year}&year_range=${yearRange}`);
-        return await resp.json();
+        try {
+            console.log(`[DEBUG] Fetching tourist trends for year: ${year}, range: ${yearRange}`);
+            const url = `/api/my-tourist-chart-data/?year=${year}&year_range=${yearRange}`;
+            console.log(`[DEBUG] API URL: ${url}`);
+            
+            const resp = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin'
+            });
+            
+            console.log(`[DEBUG] Response status: ${resp.status}`);
+            
+            if (!resp.ok) {
+                throw new Error(`HTTP error! status: ${resp.status}`);
+            }
+            
+            const data = await resp.json();
+            console.log(`[DEBUG] API response data:`, data);
+            return data;
+        } catch (error) {
+            console.error('[ERROR] Failed to fetch tourist trends:', error);
+            // Return fallback empty data
+            return {
+                monthly: {},
+                yearly: {},
+                year: year,
+                year_range: yearRange || 5
+            };
+        }
     }
 
     let monthlyChart, yearlyChart;
@@ -2726,10 +2796,38 @@
     
     async function renderTouristCharts() {
         try {
+            // Check if Chart.js is loaded
+            if (typeof Chart === 'undefined') {
+                console.error('[ERROR] Chart.js library not loaded');
+                // Try to load from CDN as fallback
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js';
+                script.onload = () => {
+                    console.log('[DEBUG] Chart.js loaded from CDN fallback');
+                    setTimeout(renderTouristCharts, 500); // Retry after load
+                };
+                document.head.appendChild(script);
+                return;
+            }
+            
             const currentYear = new Date().getFullYear();
-            const year = parseInt(document.getElementById('monthly-trend-year-select').value) || currentYear;
-            const yearRange = parseInt(document.getElementById('yearly-trend-range-select').value) || 5;
-            const data = await fetchTouristTrends(year, yearRange);
+            const selectedYear = parseInt(document.getElementById('monthly-trend-year-select')?.value) || currentYear;
+            const yearRange = parseInt(document.getElementById('yearly-trend-range-select')?.value) || 5;
+            
+            // Make charts connected: yearly chart should center around the selected month year
+            // Calculate year range centered around the selected year (allow future years)
+            const halfRange = Math.floor(yearRange / 2);
+            const yearlyStartYear = Math.max(selectedYear - halfRange, selectedYear - yearRange + 1);
+            const yearlyEndYear = yearlyStartYear + yearRange - 1;
+            
+            console.log(`[DEBUG] Chart parameters: monthlyYear=${selectedYear}, yearRange=${yearRange}`);
+            console.log(`[DEBUG] Yearly range: ${yearlyStartYear} to ${yearlyEndYear} (centered around ${selectedYear})`);
+            console.log(`[DEBUG] Chart.js version:`, Chart.version);
+            
+            const data = await fetchTouristTrends(selectedYear, yearRange);
+            console.log(`[DEBUG] Received data:`, data);
+            console.log(`[DEBUG] Raw yearly data from API:`, data.yearly);
+            console.log(`[DEBUG] Available years in data:`, data.yearly ? Object.keys(data.yearly) : 'No yearly data');
             
             // Check if canvas elements exist
             const monthlyCanvas = document.getElementById('tourist-monthly-chart');
@@ -2782,59 +2880,112 @@
                     }
                 }
             },
-            plugins: [ChartDataLabels]
+            plugins: typeof ChartDataLabels !== 'undefined' ? [ChartDataLabels] : []
         });
         
-            // Yearly Chart (ensure full range is shown)
-            const startYear = year - yearRange + 1;
-            const endYear = year;
-            const years = [];
-            for (let y = startYear; y <= endYear; y++) years.push(y.toString());
-            const yearlyData = years.map(y => data.yearly && data.yearly[y] ? data.yearly[y] : 0);
+        console.log(`[DEBUG] Monthly chart created successfully`);
+        
+            // Yearly Chart (AWS-compatible with robust error handling)
+            console.log(`[DEBUG] Creating yearly chart...`);
+            console.log(`[DEBUG] Year range from API:`, yearRange);
+            console.log(`[DEBUG] Yearly data from API:`, data.yearly);
+            
+            // Build years array connected to monthly selection
+            let years = [];
+            let yearlyData = [];
+            
+            // Use the connected year range calculated above
+            const startYear = yearlyStartYear;
+            const endYear = yearlyEndYear;
+            
+            // Create years array based on connected selection
+            for (let y = startYear; y <= endYear; y++) {
+                years.push(y.toString());
+                // Get data for this year if available, otherwise 0
+                yearlyData.push((data.yearly && data.yearly[y.toString()]) ? data.yearly[y.toString()] : 0);
+            }
+            
+            console.log(`[DEBUG] Connected charts - Monthly year: ${selectedYear}, Yearly range: ${yearRange} years`);
+            console.log(`[DEBUG] Yearly chart shows: ${startYear} to ${endYear} (${endYear - startYear + 1} years)`);
+            console.log(`[DEBUG] Years array:`, years);
+            console.log(`[DEBUG] Yearly data values:`, yearlyData);
+            
+            console.log(`[DEBUG] Final yearly data:`, yearlyData);
+            
             const ctxYear = yearlyCanvas.getContext('2d');
             if (yearlyChart) { 
                 yearlyChart.destroy(); 
                 yearlyChart = null;
             }
+            
             yearlyChart = new Chart(ctxYear, {
-            type: 'line',
-            data: {
-                labels: years,
-                datasets: [{
-                    label: 'Guests per Year',
-                    data: yearlyData,
-                    borderColor: '#43aa8b',
-                    backgroundColor: 'rgba(67,170,139,0.1)',
-                    fill: true,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { enabled: true },
-                    datalabels: {
-                        display: true,
-                        color: '#222',
-                        font: { weight: 'bold' },
-                        anchor: 'end',
-                        align: 'top',
-                        formatter: function(value) { return value > 0 ? value : ''; }
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: [{
+                        label: 'Guests per Year',
+                        data: yearlyData,
+                        borderColor: '#43aa8b',
+                        backgroundColor: 'rgba(67,170,139,0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: '#43aa8b'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { 
+                            enabled: true,
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff'
+                        },
+                        datalabels: {
+                            display: true,
+                            color: '#222',
+                            font: { weight: 'bold', size: 12 },
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: function(value) { 
+                                return value > 0 ? value : ''; 
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: Math.max(...yearlyData, 10),
+                            ticks: {
+                                stepSize: 1,
+                                font: { size: 11 }
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: { size: 11 },
+                                maxRotation: 0
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
                     }
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        suggestedMax: Math.max(...yearlyData, 10)
-                    }
-                }
-            },
-                plugins: [ChartDataLabels]
+                plugins: typeof ChartDataLabels !== 'undefined' ? [ChartDataLabels] : []
             });
             
+            console.log(`[DEBUG] Yearly chart created successfully`);
+            
             // Generate interpretations
-            generateMonthlyInterpretation(monthlyData, months, year);
+            generateMonthlyInterpretation(monthlyData, months, selectedYear);
             generateYearlyInterpretation(yearlyData, years);
             
             // Ensure interpretations are visible
@@ -2845,12 +2996,47 @@
             
             chartsInitialized = true;
         } catch (error) {
-            console.error('Error rendering tourist charts:', error);
-            // Show error message to user
+            console.error('[ERROR] Failed to render tourist charts:', error);
+            console.error('[ERROR] Error details:', {
+                message: error.message,
+                stack: error.stack,
+                chartLibLoaded: typeof Chart !== 'undefined',
+                dataLabelsLoaded: typeof ChartDataLabels !== 'undefined',
+                canvasesExist: {
+                    monthly: !!document.getElementById('tourist-monthly-chart'),
+                    yearly: !!document.getElementById('tourist-yearly-chart')
+                },
+                userAgent: navigator.userAgent,
+                location: window.location.href
+            });
+            
+            // Show user-friendly error message with retry button
             const monthlyCanvas = document.getElementById('tourist-monthly-chart');
             const yearlyCanvas = document.getElementById('tourist-yearly-chart');
-            if (monthlyCanvas) monthlyCanvas.style.display = 'none';
-            if (yearlyCanvas) yearlyCanvas.style.display = 'none';
+            
+            if (monthlyCanvas && monthlyCanvas.parentElement) {
+                monthlyCanvas.parentElement.innerHTML = `
+                    <div style="text-align:center;color:#e74c3c;padding:20px;">
+                        <i class="fa fa-exclamation-triangle"></i><br>
+                        Error loading monthly chart<br>
+                        <button onclick="renderTouristCharts()" style="margin-top:10px;padding:8px 16px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+            
+            if (yearlyCanvas && yearlyCanvas.parentElement) {
+                yearlyCanvas.parentElement.innerHTML = `
+                    <div style="text-align:center;color:#e74c3c;padding:20px;">
+                        <i class="fa fa-exclamation-triangle"></i><br>
+                        Error loading yearly chart<br>
+                        <button onclick="renderTouristCharts()" style="margin-top:10px;padding:8px 16px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
         }
     }
     
@@ -2912,7 +3098,7 @@
         if (totalGuests === 0) {
             interpretation = `<span class="highlight">No guest data available</span> for the selected period. Focus on establishing your homestay's online presence and marketing strategy.`;
         } else {
-            const currentYear = new Date().getFullYear();
+            const currentYearForInterpretation = new Date().getFullYear();
             const yearRange = years.length;
             const avgPerYear = Math.round(totalGuests / yearRange);
             
@@ -2937,7 +3123,7 @@
             if (maxGuests > 0) {
                 interpretation += `<span class="highlight">${maxYear}</span> was your best year with <span class="trend-up">${maxGuests} guests</span>. `;
                 
-                if (maxYear === currentYear.toString()) {
+                if (maxYear === currentYearForInterpretation.toString()) {
                     interpretation += `This year is shaping up to be your most successful yet!`;
                 } else {
                     interpretation += `Consider what made that year special and how to replicate that success.`;
@@ -2948,36 +3134,115 @@
         interpretationText.innerHTML = interpretation;
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Prevent multiple initializations
-        if (window.touristChartsInitialized) return;
-        window.touristChartsInitialized = true;
+    // Enhanced initialization function for AWS compatibility
+    function initializeTouristCharts() {
+        console.log('[DEBUG] Starting tourist charts initialization');
+        console.log('[DEBUG] Chart.js available:', typeof Chart !== 'undefined');
+        console.log('[DEBUG] ChartDataLabels available:', typeof ChartDataLabels !== 'undefined');
         
-        // Populate year/range selects
-        const currentYear = new Date().getFullYear();
-        populateMonthlyTrendYearSelect(currentYear);
+        // Check if already initialized
+        if (window.touristChartsInitialized) {
+            console.log('[DEBUG] Charts already initialized, skipping');
+            return;
+        }
         
+        // Check required elements exist
+        const monthlyCanvas = document.getElementById('tourist-monthly-chart');
+        const yearlyCanvas = document.getElementById('tourist-yearly-chart');
         const yearRangeSelect = document.getElementById('yearly-trend-range-select');
         const monthYearSelect = document.getElementById('monthly-trend-year-select');
+        
+        console.log('[DEBUG] Elements found:', {
+            monthlyCanvas: !!monthlyCanvas,
+            yearlyCanvas: !!yearlyCanvas,
+            yearRangeSelect: !!yearRangeSelect,
+            monthYearSelect: !!monthYearSelect
+        });
+        
+        if (!monthlyCanvas || !yearlyCanvas) {
+            console.warn('[WARN] Chart canvases not found, retrying in 500ms');
+            setTimeout(initializeTouristCharts, 500);
+            return;
+        }
+        
+        // Check if Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+            console.warn('[WARN] Chart.js not loaded, retrying in 500ms');
+            setTimeout(initializeTouristCharts, 500);
+            return;
+        }
+        
+        window.touristChartsInitialized = true;
+        console.log('[DEBUG] Setting up chart selectors');
+        
+        // Populate year/range selects
+        const currentYearForInit = new Date().getFullYear();
+        populateMonthlyTrendYearSelect(currentYearForInit);
         
         if (yearRangeSelect) {
             yearRangeSelect.value = 5;
         }
         
-        // Initialize charts after a short delay to ensure DOM is ready
-        setTimeout(() => {
-            renderTouristCharts();
-        }, 100);
-        
         // Add event listeners only once
         if (monthYearSelect && !monthYearSelect.hasAttribute('data-listener-added')) {
-            monthYearSelect.addEventListener('change', renderTouristCharts);
+            monthYearSelect.addEventListener('change', () => {
+                console.log('[DEBUG] Month/Year changed, re-rendering charts');
+                renderTouristCharts();
+            });
             monthYearSelect.setAttribute('data-listener-added', 'true');
         }
         
         if (yearRangeSelect && !yearRangeSelect.hasAttribute('data-listener-added')) {
-            yearRangeSelect.addEventListener('change', renderTouristCharts);
+            yearRangeSelect.addEventListener('change', () => {
+                console.log('[DEBUG] Year range changed, re-rendering charts');
+                renderTouristCharts();
+            });
             yearRangeSelect.setAttribute('data-listener-added', 'true');
+        }
+        
+        // Initialize charts with delay for AWS compatibility
+        console.log('[DEBUG] Scheduling chart rendering');
+        setTimeout(() => {
+            renderTouristCharts();
+        }, 300);
+    }
+    
+    // Force initialization function for debugging
+    window.forceRenderCharts = function() {
+        console.log('[FORCE] Forcing chart render...');
+        window.touristChartsInitialized = false;
+        chartsInitialized = false;
+        if (monthlyChart) {
+            monthlyChart.destroy();
+            monthlyChart = null;
+        }
+        if (yearlyChart) {
+            yearlyChart.destroy();
+            yearlyChart = null;
+        }
+        renderTouristCharts();
+    };
+    
+    // Make functions globally accessible for debugging
+    window.initializeTouristCharts = initializeTouristCharts;
+    window.renderTouristCharts = renderTouristCharts;
+    
+    // Multiple initialization strategies for AWS compatibility
+    document.addEventListener('DOMContentLoaded', initializeTouristCharts);
+    
+    // Fallback initialization for different loading states
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeTouristCharts);
+    } else {
+        // DOM already loaded
+        setTimeout(initializeTouristCharts, 100);
+    }
+    
+    // Additional fallback for AWS hosting issues
+    window.addEventListener('load', function() {
+        if (!window.touristChartsInitialized) {
+            console.log('[DEBUG] Fallback initialization triggered');
+            setTimeout(initializeTouristCharts, 500);
         }
     });
     </script>

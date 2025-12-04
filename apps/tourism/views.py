@@ -308,15 +308,29 @@ def api_my_tourist_chart_data(request):
     import datetime
     now = datetime.date.today()
     year = int(request.GET.get('year', now.year))
-    # Always start yearly chart at 2024
-    min_year = 2024
-    # Find the latest year with a booking for this homestay
-    latest_booking = Booking.objects.filter(homestay__owner=request.user).order_by('-date').first()
-    max_year = year
-    if latest_booking:
-        max_year = max(year, latest_booking.date.year)
-    # For dropdowns, always show 2024 to max_year
-    year_range = max_year - min_year + 1
+    # Get year range from frontend dropdown (5 or 10 years)
+    year_range = int(request.GET.get('year_range', 5))
+    
+    # Calculate start and end years connected to the selected year (for monthly chart)
+    # This makes the yearly chart center around the selected year for monthly data
+    selected_year = year  # This is the year selected for monthly chart
+    
+    # Calculate year range centered around selected year, but ensure it doesn't go too far back
+    half_range = year_range // 2
+    min_year = max(selected_year - half_range, selected_year - year_range + 1)
+    max_year = min_year + year_range - 1
+    
+    # Allow future years - don't limit to current year since bookings can be for future dates
+    # Remove the current year limitation to allow future bookings to show in yearly chart
+    
+    # Debug logging
+    current_year = now.year
+    print(f"[DEBUG] Selected year (monthly): {selected_year}")
+    print(f"[DEBUG] Year range request: {year_range} years")
+    print(f"[DEBUG] Half range: {half_range}")
+    print(f"[DEBUG] Calculated yearly range: {min_year} to {max_year} ({max_year - min_year + 1} years)")
+    print(f"[DEBUG] Current year: {current_year}")
+    print(f"[DEBUG] Yearly chart centered around selected year: {selected_year}")
     try:
         homestay = Homestay.objects.filter(owner=request.user).first()
         if not homestay:
@@ -328,11 +342,22 @@ def api_my_tourist_chart_data(request):
     monthly = monthly.values_list('date__month').annotate(total=Sum('num_people'))
     monthly_dict = {calendar.month_abbr[m]: t for m, t in monthly}
     monthly_data = {calendar.month_abbr[m]: monthly_dict.get(calendar.month_abbr[m], 0) for m in range(1, 13)}
-    # Yearly aggregation for all years from 2024 to max_year
-    yearly = Booking.objects.filter(homestay=homestay, date__year__gte=min_year, num_people__gt=0)
+    # Yearly aggregation for the selected range (respecting dropdown selection)
+    yearly = Booking.objects.filter(
+        homestay=homestay, 
+        date__year__gte=min_year, 
+        date__year__lte=max_year,
+        num_people__gt=0
+    )
     yearly = yearly.values_list('date__year').annotate(total=Sum('num_people'))
     yearly_dict = {str(y): t for y, t in yearly}
+    # Always return data for the full range selected in dropdown
     yearly_data = {str(y): yearly_dict.get(str(y), 0) for y in range(min_year, max_year + 1)}
+    
+    # Debug the final data being returned
+    print(f"[DEBUG] Yearly data being returned: {yearly_data}")
+    print(f"[DEBUG] Raw yearly query results: {yearly_dict}")
+    
     return JsonResponse({
         'monthly': monthly_data,
         'yearly': yearly_data,
