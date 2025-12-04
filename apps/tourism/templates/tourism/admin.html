@@ -1903,7 +1903,7 @@
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="{% static 'tourism/css/fontawesome/all.min.css' %}" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
@@ -3512,7 +3512,7 @@
                     <div class="user-card-actions">
                         <div class="action-icons">
                             <i class="fas fa-edit edit-icon" title="Edit" onclick="editUserFromCard(this, ${index})"></i>
-                            <i class="fas fa-trash delete-icon" title="Delete" onclick="deleteUserFromCard(this, ${index})"></i>
+                            <i class="fas fa-archive delete-icon" title="Archive" onclick="deleteUserFromCard(this, ${index})"></i>
                         </div>
                     </div>
                 `;
