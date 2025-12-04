@@ -312,13 +312,12 @@ def api_my_tourist_chart_data(request):
     year_range = int(request.GET.get('year_range', 5))
     
     # Calculate start and end years connected to the selected year (for monthly chart)
-    # This makes the yearly chart center around the selected year for monthly data
+    # Show the last 5 years ending with the selected year (like MTO account)
     selected_year = year  # This is the year selected for monthly chart
     
-    # Calculate year range centered around selected year, but ensure it doesn't go too far back
-    half_range = year_range // 2
-    min_year = max(selected_year - half_range, selected_year - year_range + 1)
-    max_year = min_year + year_range - 1
+    # Use the year_range from frontend (5 or 10 years ending with selected year)
+    max_year = selected_year
+    min_year = max_year - year_range + 1
     
     # Allow future years - don't limit to current year since bookings can be for future dates
     # Remove the current year limitation to allow future bookings to show in yearly chart
@@ -326,11 +325,10 @@ def api_my_tourist_chart_data(request):
     # Debug logging
     current_year = now.year
     print(f"[DEBUG] Selected year (monthly): {selected_year}")
-    print(f"[DEBUG] Year range request: {year_range} years")
-    print(f"[DEBUG] Half range: {half_range}")
+    print(f"[DEBUG] Year range: {year_range} years (last {year_range} years)")
     print(f"[DEBUG] Calculated yearly range: {min_year} to {max_year} ({max_year - min_year + 1} years)")
     print(f"[DEBUG] Current year: {current_year}")
-    print(f"[DEBUG] Yearly chart centered around selected year: {selected_year}")
+    print(f"[DEBUG] Yearly chart shows last {year_range} years ending with: {selected_year}")
     try:
         homestay = Homestay.objects.filter(owner=request.user).first()
         if not homestay:

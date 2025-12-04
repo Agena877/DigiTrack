@@ -2148,6 +2148,15 @@
             max-height: 300px;
         }
         
+        /* Ensure chart canvases resize properly */
+        #tourist-monthly-chart,
+        #tourist-yearly-chart {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100%;
+            max-height: 250px;
+        }
+        
         .chart-interpretation {
             padding: 12px 20px 16px 20px;
             background: #f8fafc;
@@ -2794,6 +2803,10 @@
     let monthlyChart, yearlyChart;
     let chartsInitialized = false;
     
+    // Make charts globally accessible for resize handling
+    window.monthlyChart = null;
+    window.yearlyChart = null;
+    
     async function renderTouristCharts() {
         try {
             // Check if Chart.js is loaded
@@ -2814,14 +2827,13 @@
             const selectedYear = parseInt(document.getElementById('monthly-trend-year-select')?.value) || currentYear;
             const yearRange = parseInt(document.getElementById('yearly-trend-range-select')?.value) || 5;
             
-            // Make charts connected: yearly chart should center around the selected month year
-            // Calculate year range centered around the selected year (allow future years)
-            const halfRange = Math.floor(yearRange / 2);
-            const yearlyStartYear = Math.max(selectedYear - halfRange, selectedYear - yearRange + 1);
-            const yearlyEndYear = yearlyStartYear + yearRange - 1;
+            // Make charts connected: yearly chart shows last 5 years ending with selected year (like MTO account)
+            // Calculate year range as last 5 years ending with the selected year
+            const yearlyEndYear = selectedYear;
+            const yearlyStartYear = yearlyEndYear - yearRange + 1;
             
             console.log(`[DEBUG] Chart parameters: monthlyYear=${selectedYear}, yearRange=${yearRange}`);
-            console.log(`[DEBUG] Yearly range: ${yearlyStartYear} to ${yearlyEndYear} (centered around ${selectedYear})`);
+            console.log(`[DEBUG] Yearly range: ${yearlyStartYear} to ${yearlyEndYear} (last ${yearRange} years ending with ${selectedYear})`);
             console.log(`[DEBUG] Chart.js version:`, Chart.version);
             
             const data = await fetchTouristTrends(selectedYear, yearRange);
@@ -2829,12 +2841,30 @@
             console.log(`[DEBUG] Raw yearly data from API:`, data.yearly);
             console.log(`[DEBUG] Available years in data:`, data.yearly ? Object.keys(data.yearly) : 'No yearly data');
             
-            // Check if canvas elements exist
+            // Check if canvas elements exist with detailed debugging
             const monthlyCanvas = document.getElementById('tourist-monthly-chart');
             const yearlyCanvas = document.getElementById('tourist-yearly-chart');
+            const dashboardSection = document.getElementById('dashboard');
+            
+            console.log('[DEBUG] Canvas element check:', {
+                monthlyCanvas: monthlyCanvas ? 'found' : 'NOT FOUND',
+                yearlyCanvas: yearlyCanvas ? 'found' : 'NOT FOUND',
+                dashboardSection: dashboardSection ? 'found' : 'NOT FOUND',
+                dashboardActive: dashboardSection ? dashboardSection.classList.contains('active') : false
+            });
             
             if (!monthlyCanvas || !yearlyCanvas) {
-                console.warn('Chart canvas elements not found');
+                console.error('[ERROR] Chart canvas elements not found. Monthly:', !!monthlyCanvas, 'Yearly:', !!yearlyCanvas);
+                // Try to make dashboard section active if it's not
+                if (dashboardSection && !dashboardSection.classList.contains('active')) {
+                    console.log('[DEBUG] Dashboard section not active, activating...');
+                    document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+                    dashboardSection.classList.add('active');
+                    // Retry after making dashboard active
+                    setTimeout(() => {
+                        renderTouristCharts();
+                    }, 100);
+                }
                 return;
             }
             
@@ -2845,6 +2875,7 @@
             if (monthlyChart) { 
                 monthlyChart.destroy(); 
                 monthlyChart = null;
+                window.monthlyChart = null;
             }
             monthlyChart = new Chart(ctxMonth, {
             type: 'line',
@@ -2861,6 +2892,7 @@
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: { display: false },
                     tooltip: { enabled: true },
@@ -2884,6 +2916,7 @@
         });
         
         console.log(`[DEBUG] Monthly chart created successfully`);
+        window.monthlyChart = monthlyChart;
         
             // Yearly Chart (AWS-compatible with robust error handling)
             console.log(`[DEBUG] Creating yearly chart...`);
@@ -2994,6 +3027,7 @@
             if (monthlyInterp) monthlyInterp.style.display = 'block';
             if (yearlyInterp) yearlyInterp.style.display = 'block';
             
+            window.yearlyChart = yearlyChart;
             chartsInitialized = true;
         } catch (error) {
             console.error('[ERROR] Failed to render tourist charts:', error);
@@ -3096,13 +3130,15 @@
         let interpretation = '';
         
         if (totalGuests === 0) {
-            interpretation = `<span class="highlight">No guest data available</span> for the selected period. Focus on establishing your homestay's online presence and marketing strategy.`;
+            const yearRange = parseInt(document.getElementById('yearly-trend-range-select')?.value) || 5;
+            interpretation = `<span class="highlight">No guest data available</span> for the last ${yearRange} years ending with the selected year. Focus on establishing your homestay's online presence and marketing strategy.`;
         } else {
-            const currentYearForInterpretation = new Date().getFullYear();
+            const selectedYear = parseInt(document.getElementById('monthly-trend-year-select')?.value) || new Date().getFullYear();
+            const yearRangeFromDropdown = parseInt(document.getElementById('yearly-trend-range-select')?.value) || 5;
             const yearRange = years.length;
             const avgPerYear = Math.round(totalGuests / yearRange);
             
-            interpretation += `Over the last <span class="highlight">${yearRange} years</span>, your homestay has hosted <span class="highlight">${totalGuests} guests total</span>, averaging <span class="highlight">${avgPerYear} guests per year</span>. `;
+            interpretation += `For the ${yearRangeFromDropdown}-year period ending in <span class="highlight">${selectedYear}</span>, your homestay has hosted <span class="highlight">${totalGuests} guests total</span>, averaging <span class="highlight">${avgPerYear} guests per year</span>. `;
             
             // Growth trend analysis
             const recentYears = yearlyData.slice(-3).filter(v => v > 0);
@@ -3121,6 +3157,7 @@
             const maxYear = years[yearlyData.indexOf(Math.max(...yearlyData))];
             const maxGuests = Math.max(...yearlyData);
             if (maxGuests > 0) {
+                const currentYearForInterpretation = new Date().getFullYear();
                 interpretation += `<span class="highlight">${maxYear}</span> was your best year with <span class="trend-up">${maxGuests} guests</span>. `;
                 
                 if (maxYear === currentYearForInterpretation.toString()) {
@@ -3151,50 +3188,63 @@
         const yearlyCanvas = document.getElementById('tourist-yearly-chart');
         const yearRangeSelect = document.getElementById('yearly-trend-range-select');
         const monthYearSelect = document.getElementById('monthly-trend-year-select');
+        const dashboardSection = document.getElementById('dashboard');
         
         console.log('[DEBUG] Elements found:', {
             monthlyCanvas: !!monthlyCanvas,
             yearlyCanvas: !!yearlyCanvas,
             yearRangeSelect: !!yearRangeSelect,
-            monthYearSelect: !!monthYearSelect
+            monthYearSelect: !!monthYearSelect,
+            dashboardSection: !!dashboardSection,
+            dashboardActive: dashboardSection ? dashboardSection.classList.contains('active') : false,
+            documentReady: document.readyState
         });
         
         if (!monthlyCanvas || !yearlyCanvas) {
-            console.warn('[WARN] Chart canvases not found, retrying in 500ms');
-            setTimeout(initializeTouristCharts, 500);
+            console.warn('[WARN] Chart canvases not found');
+            // Ensure dashboard is active if it exists
+            if (dashboardSection && !dashboardSection.classList.contains('active')) {
+                console.log('[DEBUG] Activating dashboard section');
+                document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+                dashboardSection.classList.add('active');
+            }
+            console.warn('[WARN] Retrying initialization in 500ms');
+            setTimeout(window.initializeTouristCharts, 500);
             return;
         }
         
         // Check if Chart.js is loaded
         if (typeof Chart === 'undefined') {
             console.warn('[WARN] Chart.js not loaded, retrying in 500ms');
-            setTimeout(initializeTouristCharts, 500);
+            setTimeout(window.initializeTouristCharts, 500);
             return;
         }
         
         window.touristChartsInitialized = true;
         console.log('[DEBUG] Setting up chart selectors');
         
-        // Populate year/range selects
+        // Populate year select for monthly chart
         const currentYearForInit = new Date().getFullYear();
         populateMonthlyTrendYearSelect(currentYearForInit);
         
+        // Set default year range
         if (yearRangeSelect) {
-            yearRangeSelect.value = 5;
+            yearRangeSelect.value = '5';
         }
         
-        // Add event listeners only once
+        // Add event listener for monthly year selection (this will trigger yearly chart update)
         if (monthYearSelect && !monthYearSelect.hasAttribute('data-listener-added')) {
             monthYearSelect.addEventListener('change', () => {
-                console.log('[DEBUG] Month/Year changed, re-rendering charts');
+                console.log('[DEBUG] Month/Year changed, re-rendering both charts');
                 renderTouristCharts();
             });
             monthYearSelect.setAttribute('data-listener-added', 'true');
         }
         
+        // Add event listener for year range selection
         if (yearRangeSelect && !yearRangeSelect.hasAttribute('data-listener-added')) {
             yearRangeSelect.addEventListener('change', () => {
-                console.log('[DEBUG] Year range changed, re-rendering charts');
+                console.log('[DEBUG] Year range changed, re-rendering yearly chart');
                 renderTouristCharts();
             });
             yearRangeSelect.setAttribute('data-listener-added', 'true');
@@ -3219,13 +3269,10 @@
         if (yearlyChart) {
             yearlyChart.destroy();
             yearlyChart = null;
+            window.yearlyChart = null;
         }
         renderTouristCharts();
     };
-    
-    // Make functions globally accessible for debugging
-    window.initializeTouristCharts = initializeTouristCharts;
-    window.renderTouristCharts = renderTouristCharts;
     
     // Multiple initialization strategies for AWS compatibility
     document.addEventListener('DOMContentLoaded', initializeTouristCharts);
@@ -3235,16 +3282,41 @@
         document.addEventListener('DOMContentLoaded', initializeTouristCharts);
     } else {
         // DOM already loaded
-        setTimeout(initializeTouristCharts, 100);
+        setTimeout(window.initializeTouristCharts, 100);
     }
     
     // Additional fallback for AWS hosting issues
     window.addEventListener('load', function() {
         if (!window.touristChartsInitialized) {
             console.log('[DEBUG] Fallback initialization triggered');
-            setTimeout(initializeTouristCharts, 500);
+            setTimeout(window.initializeTouristCharts, 500);
         }
     });
+    
+    // Make functions globally accessible for debugging
+    window.initializeTouristCharts = initializeTouristCharts;
+    window.renderTouristCharts = renderTouristCharts;
+    
+    // Global function to force chart resize
+    window.forceChartResize = function() {
+        console.log('[DEBUG] Force chart resize called');
+        setTimeout(() => {
+            try {
+                if (window.monthlyChart) {
+                    console.log('[DEBUG] Forcing monthly chart resize');
+                    window.monthlyChart.resize();
+                    window.monthlyChart.update('resize');
+                }
+                if (window.yearlyChart) {
+                    console.log('[DEBUG] Forcing yearly chart resize');
+                    window.yearlyChart.resize();
+                    window.yearlyChart.update('resize');
+                }
+            } catch (error) {
+                console.warn('[DEBUG] Error in forceChartResize:', error);
+            }
+        }, 100);
+    };
     </script>
             </div>
 
@@ -4079,6 +4151,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Add active class to clicked link
             event.target.closest('.sidebar-menu a').classList.add('active');
+
+            // Force chart resize when switching to dashboard
+            if (sectionName === 'dashboard') {
+                console.log('[DEBUG] Switching to dashboard, scheduling chart resize');
+                setTimeout(() => {
+                    if (window.forceChartResize) {
+                        window.forceChartResize();
+                    }
+                }, 200);
+            }
 
             // No need to call renderTouristTable; table is rendered by loadMyTouristTable()
         }
@@ -5393,6 +5475,47 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (mobileTouristCards) mobileTouristCards.style.display = 'none';
                 closeMobileMenu();
             }
+            
+            // Fix chart resize issues when switching between mobile and web view
+            // Use multiple timeouts to ensure proper resizing
+            const forceChartResize = () => {
+                try {
+                    console.log('[DEBUG] Forcing chart resize after layout change');
+                    
+                    // Force container resize first
+                    const monthlyCanvas = document.getElementById('tourist-monthly-chart');
+                    const yearlyCanvas = document.getElementById('tourist-yearly-chart');
+                    
+                    if (monthlyCanvas && window.monthlyChart) {
+                        console.log('[DEBUG] Resizing monthly chart - current size:', monthlyCanvas.offsetWidth, 'x', monthlyCanvas.offsetHeight);
+                        window.monthlyChart.resize();
+                        window.monthlyChart.update('resize');
+                    }
+                    if (yearlyCanvas && window.yearlyChart) {
+                        console.log('[DEBUG] Resizing yearly chart - current size:', yearlyCanvas.offsetWidth, 'x', yearlyCanvas.offsetHeight);
+                        window.yearlyChart.resize();
+                        window.yearlyChart.update('resize');
+                    }
+                    
+                    // If charts don't exist but should, trigger re-render
+                    if ((!window.monthlyChart || !window.yearlyChart)) {
+                        const dashboardSection = document.getElementById('dashboard');
+                        if (dashboardSection && dashboardSection.classList.contains('active')) {
+                            console.log('[DEBUG] Re-rendering charts after view change');
+                            if (window.renderTouristCharts) {
+                                setTimeout(() => window.renderTouristCharts(), 100);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.warn('[DEBUG] Chart resize error:', error);
+                }
+            };
+            
+            // Multiple resize attempts to ensure it works
+            setTimeout(forceChartResize, 100);
+            setTimeout(forceChartResize, 300);
+            setTimeout(forceChartResize, 600);
         }
         
         // Render mobile room cards
@@ -5522,6 +5645,46 @@ document.addEventListener('DOMContentLoaded', function() {
             // Handle window resize
             window.addEventListener('resize', handleResponsiveLayout);
             
+            // Add debounced chart resize listener for better performance
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    try {
+                        console.log('[DEBUG] Window resized, updating charts');
+                        if (window.monthlyChart) {
+                            window.monthlyChart.resize();
+                            window.monthlyChart.update('resize');
+                        }
+                        if (window.yearlyChart) {
+                            window.yearlyChart.resize();
+                            window.yearlyChart.update('resize');
+                        }
+                    } catch (error) {
+                        console.warn('[DEBUG] Chart resize error on window resize:', error);
+                    }
+                }, 150);
+            });
+            
+            // Add orientation change listener for mobile devices
+            window.addEventListener('orientationchange', function() {
+                setTimeout(() => {
+                    try {
+                        console.log('[DEBUG] Orientation changed, updating charts');
+                        if (window.monthlyChart) {
+                            window.monthlyChart.resize();
+                            window.monthlyChart.update('resize');
+                        }
+                        if (window.yearlyChart) {
+                            window.yearlyChart.resize();
+                            window.yearlyChart.update('resize');
+                        }
+                    } catch (error) {
+                        console.warn('[DEBUG] Chart resize error on orientation change:', error);
+                    }
+                }, 500);
+            });
+            
             // Update mobile cards when data changes
             const originalAddRoomToTable = window.addRoomToTable;
             if (originalAddRoomToTable) {
@@ -5624,6 +5787,24 @@ if (wifiInput) {
         saveFeatureStates(states);
     });
 }
+
+// Ensure dashboard is active on page load and charts initialize
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('[DEBUG] Page loaded, ensuring dashboard is active for charts');
+    const dashboardSection = document.getElementById('dashboard');
+    if (dashboardSection && !dashboardSection.classList.contains('active')) {
+        console.log('[DEBUG] Making dashboard active');
+        document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+        dashboardSection.classList.add('active');
+    }
+    // Force chart initialization after ensuring dashboard is active
+    setTimeout(() => {
+        if (!window.touristChartsInitialized) {
+            console.log('[DEBUG] Force initializing tourist charts');
+            window.initializeTouristCharts();
+        }
+    }, 300);
+});
 </script>
 </body>
 </html>
