@@ -3967,13 +3967,34 @@
 
 function suspendUser(btn) {
     const row = btn.closest('tr');
-    const username = row.cells[4].textContent;
+    const card = btn.closest('.user-card');
+    
+    let username, homestayName, ownerName, address;
+    
+    if (row && row.cells) {
+        // Desktop table view
+        username = row.cells[4].textContent.trim();
+        homestayName = row.cells[1].textContent.trim();
+        ownerName = row.cells[2].textContent.trim();
+        address = row.cells[3].textContent.trim();
+    } else if (card) {
+        // Mobile card view
+        homestayName = card.querySelector('.user-card-title')?.textContent.trim() || '';
+        ownerName = card.querySelector('.user-card-subtitle')?.textContent.trim() || '';
+        const fields = card.querySelectorAll('.user-card-field');
+        address = fields[0]?.textContent.replace('Address', '').trim() || '';
+        username = fields[1]?.textContent.replace('Username', '').trim() || '';
+    } else {
+        customAlert('Error: Could not find user data.');
+        return;
+    }
+    
     // Gather user data for API
     const userData = {
-        username: row.cells[4].textContent,
-        homestayName: row.cells[1].textContent,
-        ownerName: row.cells[2].textContent,
-        address: row.cells[3].textContent,
+        username: username,
+        homestayName: homestayName,
+        ownerName: ownerName,
+        address: address,
         status: 'Inactive'
     };
     const csrftoken = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '';
@@ -3989,12 +4010,22 @@ function suspendUser(btn) {
     .then(result => {
         if (result.success) {
             // Update UI
-            const statusCell = row.cells[6];
-            if (statusCell) {
-                statusCell.innerHTML = '<span class="status-badge status-inactive">Inactive</span>';
+            if (row && row.cells) {
+                const statusCell = row.cells[6];
+                if (statusCell) {
+                    statusCell.innerHTML = '<span class="status-badge status-inactive">Inactive</span>';
+                }
             }
+            if (card) {
+                const statusBadge = card.querySelector('.status-badge');
+                if (statusBadge) {
+                    statusBadge.className = 'status-badge status-inactive';
+                    statusBadge.textContent = 'Inactive';
+                }
+            }
+            // Update main users table
             document.querySelectorAll('#user-table-body tr').forEach(userRow => {
-                if (userRow.cells[4].textContent === username) {
+                if (userRow.cells[4] && userRow.cells[4].textContent.trim() === username) {
                     userRow.cells[6].innerHTML = '<span class="status-badge status-inactive">Inactive</span>';
                 }
             });
@@ -4011,13 +4042,34 @@ function suspendUser(btn) {
 
 function unsuspendUser(btn) {
     const row = btn.closest('tr');
-    const username = row.cells[4].textContent;
+    const card = btn.closest('.user-card');
+    
+    let username, homestayName, ownerName, address;
+    
+    if (row && row.cells) {
+        // Desktop table view
+        username = row.cells[4].textContent.trim();
+        homestayName = row.cells[1].textContent.trim();
+        ownerName = row.cells[2].textContent.trim();
+        address = row.cells[3].textContent.trim();
+    } else if (card) {
+        // Mobile card view
+        homestayName = card.querySelector('.user-card-title')?.textContent.trim() || '';
+        ownerName = card.querySelector('.user-card-subtitle')?.textContent.trim() || '';
+        const fields = card.querySelectorAll('.user-card-field');
+        address = fields[0]?.textContent.replace('Address', '').trim() || '';
+        username = fields[1]?.textContent.replace('Username', '').trim() || '';
+    } else {
+        customAlert('Error: Could not find user data.');
+        return;
+    }
+    
     // Gather user data for API
     const userData = {
-        username: row.cells[4].textContent,
-        homestayName: row.cells[1].textContent,
-        ownerName: row.cells[2].textContent,
-        address: row.cells[3].textContent,
+        username: username,
+        homestayName: homestayName,
+        ownerName: ownerName,
+        address: address,
         status: 'Active'
     };
     const csrftoken = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '';
@@ -4033,12 +4085,22 @@ function unsuspendUser(btn) {
     .then(result => {
         if (result.success) {
             // Update UI
-            const statusCell = row.cells[6];
-            if (statusCell) {
-                statusCell.innerHTML = '<span class="status-badge status-active">Active</span>';
+            if (row && row.cells) {
+                const statusCell = row.cells[6];
+                if (statusCell) {
+                    statusCell.innerHTML = '<span class="status-badge status-active">Active</span>';
+                }
             }
+            if (card) {
+                const statusBadge = card.querySelector('.status-badge');
+                if (statusBadge) {
+                    statusBadge.className = 'status-badge status-active';
+                    statusBadge.textContent = 'Active';
+                }
+            }
+            // Update main users table
             document.querySelectorAll('#user-table-body tr').forEach(userRow => {
-                if (userRow.cells[4].textContent === username) {
+                if (userRow.cells[4] && userRow.cells[4].textContent.trim() === username) {
                     userRow.cells[6].innerHTML = '<span class="status-badge status-active">Active</span>';
                 }
             });
