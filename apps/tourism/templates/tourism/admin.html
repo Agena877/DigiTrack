@@ -1692,6 +1692,25 @@
                 right: 20px;
                 top: auto;
             }
+            
+            /* MTO Search bar mobile styling */
+            #mto-search {
+                font-size: 14px !important;
+                padding: 10px 12px !important;
+            }
+            
+            .search-container button {
+                padding: 10px 16px !important;
+                font-size: 13px !important;
+            }
+            
+            .search-container {
+                flex-wrap: wrap !important;
+            }
+            
+            #clear-mto-search-btn {
+                flex: 0 0 auto;
+            }
         }
 
         /* Extra small devices */
@@ -1970,6 +1989,16 @@
                 <div class="user-management-container">
                     <div class="user-management-header">
                         <h2>User Management</h2>
+                        <!-- Search bar for homestay accounts -->
+                        <div class="search-container" style="display: flex; align-items: center; gap: 10px; flex: 1; margin: 0 20px;">
+                            <input type="text" id="mto-search" placeholder="Search by homestay name, owner, address, username..." style="flex: 1; padding: 10px 16px; border: 2px solid #e1e8ed; border-radius: 8px; font-size: 14px;">
+                            <button onclick="searchHomestayAccounts()" style="padding: 10px 20px; background: linear-gradient(135deg, #0077B6, #005577); color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; white-space: nowrap;">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <button id="clear-mto-search-btn" onclick="clearHomestaySearch()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; display: none; white-space: nowrap;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                         <div class="user-management-buttons">
                             <button id="export-users-btn"><i class="fas fa-file-export"></i> Export Users</button>
                             <button id="add-new-user-btn"><i class="fas fa-plus"></i> Add New</button>
@@ -2040,6 +2069,7 @@
 
                         <!-- MTO Staff & Admin Accounts -->
                         <h3 style="margin-top:24px; margin-bottom:12px;">MTO Staff & Admin Accounts</h3>
+                        
                         <div class="table-container">
                             <table class="user-table" id="mto-accounts-table">
                                 <thead>
@@ -3638,6 +3668,189 @@
                 } else {
                     closeMobileMenu();
                 }
+            }
+        });
+
+        // Homestay Search functionality - works across all tabs
+        function searchHomestayAccounts() {
+            const searchInput = document.getElementById('mto-search');
+            const clearBtn = document.getElementById('clear-mto-search-btn');
+            const query = searchInput.value.trim().toLowerCase();
+            
+            if (query.length > 0) {
+                clearBtn.style.display = 'inline-block';
+            } else {
+                clearBtn.style.display = 'none';
+            }
+            
+            // Get the active tab
+            const activeTab = document.querySelector('.tab-content.active');
+            if (!activeTab) return;
+            
+            // Search in Users tab
+            const userTableBody = document.getElementById('user-table-body');
+            const mobileUserCards = document.getElementById('mobile-user-cards');
+            if (userTableBody && activeTab.id === 'users-tab') {
+                filterHomestayRows(userTableBody, mobileUserCards, query);
+            }
+            
+            // Search in Manage tab
+            const manageTableBody = document.getElementById('manage-table-body');
+            const mobileManageCards = document.getElementById('mobile-manage-cards');
+            if (manageTableBody && activeTab.id === 'manage-tab') {
+                filterHomestayRows(manageTableBody, mobileManageCards, query);
+            }
+            
+            // Search in Archive tab
+            const archiveTableBody = document.getElementById('archive-table-body');
+            const mobileArchiveCards = document.getElementById('mobile-archive-cards');
+            if (archiveTableBody && activeTab.id === 'archive-tab') {
+                filterHomestayRows(archiveTableBody, mobileArchiveCards, query);
+            }
+            
+            // Also search MTO accounts if visible
+            const mtoTableBody = document.getElementById('mto-accounts-body');
+            const mobileMtoCards = document.getElementById('mobile-mto-cards');
+            if (mtoTableBody && activeTab.id === 'manage-tab') {
+                filterMTORows(mtoTableBody, mobileMtoCards, query);
+            }
+        }
+        
+        function filterHomestayRows(tableBody, mobileCards, query) {
+            const rows = tableBody.querySelectorAll('tr');
+            const cards = mobileCards ? mobileCards.querySelectorAll('.user-card') : [];
+            let visibleCount = 0;
+            
+            // Filter table rows
+            rows.forEach(row => {
+                if (row.classList.contains('empty-message')) return;
+                
+                // Get text from all cells
+                const homestayName = row.cells[1]?.textContent.toLowerCase() || '';
+                const ownerName = row.cells[2]?.textContent.toLowerCase() || '';
+                const address = row.cells[3]?.textContent.toLowerCase() || '';
+                const username = row.cells[4]?.textContent.toLowerCase() || '';
+                const status = row.cells[6]?.textContent.toLowerCase() || '';
+                
+                const matches = homestayName.includes(query) || 
+                              ownerName.includes(query) || 
+                              address.includes(query) || 
+                              username.includes(query) ||
+                              status.includes(query);
+                
+                if (matches || query === '') {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Filter mobile cards
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                const matches = text.includes(query);
+                
+                if (matches || query === '') {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Update empty message if no results
+            const emptyRow = tableBody.querySelector('.empty-message');
+            if (visibleCount === 0 && query !== '' && emptyRow) {
+                emptyRow.style.display = '';
+            } else if (emptyRow) {
+                emptyRow.style.display = 'none';
+            }
+        }
+        
+        function filterMTORows(tableBody, mobileCards, query) {
+            const rows = tableBody.querySelectorAll('tr');
+            const cards = mobileCards ? mobileCards.querySelectorAll('.user-card') : [];
+            
+            rows.forEach(row => {
+                if (row.classList.contains('empty-message')) return;
+                
+                const username = row.cells[1]?.textContent.toLowerCase() || '';
+                const name = row.cells[2]?.textContent.toLowerCase() || '';
+                const role = row.cells[4]?.textContent.toLowerCase() || '';
+                const status = row.cells[5]?.textContent.toLowerCase() || '';
+                
+                const matches = username.includes(query) || 
+                              name.includes(query) || 
+                              role.includes(query) ||
+                              status.includes(query);
+                
+                if (matches || query === '') {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                const matches = text.includes(query);
+                
+                if (matches || query === '') {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        
+        function clearHomestaySearch() {
+            const searchInput = document.getElementById('mto-search');
+            const clearBtn = document.getElementById('clear-mto-search-btn');
+            
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            
+            // Show all rows and cards in all tabs
+            const allTables = ['user-table-body', 'manage-table-body', 'archive-table-body', 'mto-accounts-body'];
+            const allMobileCards = ['mobile-user-cards', 'mobile-manage-cards', 'mobile-archive-cards', 'mobile-mto-cards'];
+            
+            allTables.forEach(tableId => {
+                const tableBody = document.getElementById(tableId);
+                if (tableBody) {
+                    const rows = tableBody.querySelectorAll('tr');
+                    rows.forEach(row => {
+                        if (!row.classList.contains('empty-message')) {
+                            row.style.display = '';
+                        }
+                    });
+                }
+            });
+            
+            allMobileCards.forEach(cardsId => {
+                const mobileCards = document.getElementById(cardsId);
+                if (mobileCards) {
+                    const cards = mobileCards.querySelectorAll('.user-card');
+                    cards.forEach(card => {
+                        card.style.display = '';
+                    });
+                }
+            });
+        }
+        
+        // Add event listener for Enter key on search input
+        document.addEventListener('DOMContentLoaded', function() {
+            const mtoSearchInput = document.getElementById('mto-search');
+            if (mtoSearchInput) {
+                mtoSearchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        searchHomestayAccounts();
+                    }
+                });
+                
+                // Live search as user types
+                mtoSearchInput.addEventListener('input', function() {
+                    searchHomestayAccounts();
+                });
             }
         });
 
